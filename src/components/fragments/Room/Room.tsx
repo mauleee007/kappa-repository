@@ -17,8 +17,11 @@ import img4 from '../../../assets/DanuJungle/DeluxePoolVilla.jpg';
 import img5 from '../../../assets/DanuJungle/DeluxeSuitewithPrivateHotTub.jpg';
 import img6 from '../../../assets/DanuJungle/JungleSuite.jpg';
 import ImageItem from '../RoomTypes/ImageItem';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../../stores';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '../../../stores';
+import { setToast } from '../../../stores/ui';
+import ApiServices from '../../../services/apis';
+import HotelService from '../../../services/hotels';
 
 type Props = {
   room: Room;
@@ -30,39 +33,15 @@ type DanuProps = {
 };
 interface ListImg {
   id: number;
+  roomId: number;
   img: string;
-  text: string;
-  desc?: string;
+  name: string;
+  description?: string;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  deletedAt?: Date | string;
 }
 
-const ListImage: ListImg[] = [
-  {
-    id: 1,
-    img: img1,
-    text: 'One Bedroom Pool Villa',
-    desc: 'One Bedroom Pool Villas are private sanctuaries set within the divine Danu Retreat. Surrounded by tropical foliage, these conscientiously designed one-bedroom villas offer ample space to relax and unwind. Spend endless days relaxing in the villa spacious bedroom and recharge waterside by the private infinity swimming pool.',
-  },
-  {
-    id: 2,
-    img: img2,
-    text: 'A',
-  },
-  {
-    id: 3,
-    img: img3,
-    text: 'A',
-  },
-  {
-    id: 4,
-    img: img3,
-    text: 'A',
-  },
-  {
-    id: 5,
-    img: img5,
-    text: 'A',
-  },
-];
 const DataDanu: DanuDetail[] = [
   {
     id: 1,
@@ -111,10 +90,22 @@ const DataJungle: DanuDetail[] = [
   },
 ];
 
+const ListImageEx: ListImg = {
+  id: 1,
+  roomId: 45,
+  img: img1,
+  name: 'One Bedroom Pool Villa',
+  description:
+    'One Bedroom Pool Villas are private sanctuaries set within the divine Danu Retreat. Surrounded by tropical foliage, these conscientiously designed one-bedroom villas offer ample space to relax and unwind. Spend endless days relaxing in the villa spacious bedroom and recharge waterside by the private infinity swimming pool.',
+};
+
 const DescDanu: React.FC<DanuProps> = ({ detail, onBack }) => {
-  // const [list, setList] = useState<ListImg | null>(null);
-  const { profile } = useSelector((s: RootState) => s.hotel);
+  const [listImg, setListImg] = useState<ListImg[]>([]);
+  const { hotel, profile, cctvUrl } = useSelector((s: RootState) => s.hotel);
   const [selectedMenuIdx, setSelectedMenuIdx] = useState(0);
+  const [ListImage, setListImage] = useState<ListImg | null>(ListImageEx);
+
+  const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
     const backAction = () => {
@@ -129,6 +120,39 @@ const DescDanu: React.FC<DanuProps> = ({ detail, onBack }) => {
     return () => backHandler.remove();
   }, [onBack]);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    const getListImg = async () => {
+      if (hotel == null) {
+        return;
+      }
+
+      try {
+        const resDanuRetreat = await ApiServices.getDanu(hotel.id, 45);
+        console.log(resDanuRetreat);
+
+        if (resDanuRetreat.status === 200) {
+          if (isMounted) {
+            setListImg(resDanuRetreat.data.data);
+          }
+        } else {
+          dispatch(setToast({ message: 'Cannot get hotel rooms' }));
+        }
+
+        if (!isMounted) {
+          return;
+        }
+      } catch (err) {
+        console.log(err);
+        dispatch(setToast({ message: 'Cannot get information' }));
+      }
+      // setLoading(l => l - 1);
+    };
+
+    getListImg();
+  }, [dispatch]);
+
   return (
     <View style={styles.container}>
       <View style={styles.cardMiddle}>
@@ -139,30 +163,32 @@ const DescDanu: React.FC<DanuProps> = ({ detail, onBack }) => {
           numColumns={2}
           style={styles.menuList}
           keyExtractor={item => item.id.toString()}
-          data={ListImage}
+          data={listImg}
           renderItem={({ item, index }) => (
             <ImageItem
               key={item.id}
               preferredFocus={index === 0}
               activeColor={profile?.primaryColor}
-              source={item.img as ImageSourcePropType}
+              source={{ uri: `${BASE_FILE_URL}/${item.img}` }}
               // text={item.text}
               style={styles.item2}
-              onFocus={() => setSelectedMenuIdx(item.id)}
+              onFocus={() => setListImage(item)}
             />
           )}
         />
       </View>
 
-      <View style={styles.cardRight}>
-        <Image
-          source={ListImage[0].img}
-          resizeMode="cover"
-          style={styles.image}
-        />
-        <Text style={styles.title2}>{ListImage[0].text}</Text>
-        <Text style={styles.desc}>{ListImage[0].desc}</Text>
-      </View>
+      {listImg.length > 0 && (
+        <View style={styles.cardRight}>
+          <Image
+            source={{ uri: `${BASE_FILE_URL}/${ListImage.img}` }}
+            resizeMode="cover"
+            style={styles.image}
+          />
+          <Text style={styles.title2}>{ListImage.name}</Text>
+          <Text style={styles.desc}>{ListImage.description}</Text>
+        </View>
+      )}
     </View>
   );
 };
