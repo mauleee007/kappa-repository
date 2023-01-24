@@ -28,6 +28,7 @@ type Props = {
 };
 
 type DanuProps = {
+  room: Room;
   detail: DanuDetail;
   onBack: () => void;
 };
@@ -99,7 +100,7 @@ const ListImageEx: ListImg = {
     'One Bedroom Pool Villas are private sanctuaries set within the divine Danu Retreat. Surrounded by tropical foliage, these conscientiously designed one-bedroom villas offer ample space to relax and unwind. Spend endless days relaxing in the villa spacious bedroom and recharge waterside by the private infinity swimming pool.',
 };
 
-const DescDanu: React.FC<DanuProps> = ({ detail, onBack }) => {
+const DescDanu: React.FC<DanuProps> = ({ room, onBack }) => {
   const [listImg, setListImg] = useState<ListImg[]>([]);
   const { hotel, profile, cctvUrl } = useSelector((s: RootState) => s.hotel);
   const [selectedMenuIdx, setSelectedMenuIdx] = useState(0);
@@ -129,9 +130,8 @@ const DescDanu: React.FC<DanuProps> = ({ detail, onBack }) => {
       }
 
       try {
-        const resDanuRetreat = await ApiServices.getDanu(hotel.id, 45);
+        const resDanuRetreat = await ApiServices.getDanu(hotel.id, room.id);
         console.log(resDanuRetreat);
-
         if (resDanuRetreat.status === 200) {
           if (isMounted) {
             setListImg(resDanuRetreat.data.data);
@@ -225,7 +225,7 @@ const Room: React.FC<Props> = ({ room }) => {
         )}
       />
       {detail != null && (
-        <DescDanu detail={detail} onBack={() => setDetail(null)} />
+        <DescDanu detail={detail} room={room} onBack={() => setDetail(null)} />
       )}
     </Card>
   );
