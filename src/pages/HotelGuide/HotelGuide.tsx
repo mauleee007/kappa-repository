@@ -110,7 +110,7 @@ const HotelGuide: React.FC = () => {
 
   useEffect(() => {
     let isMounted = true;
-    
+
     const getHotelInfo = async () => {
       if (hotel == null) {
         return;
@@ -127,7 +127,9 @@ const HotelGuide: React.FC = () => {
           dispatch(setToast({ message: 'Cannot get hotel rooms' }));
         }
 
-        if (!isMounted) return;
+        if (!isMounted) {
+          return;
+        }
 
         const resFoodCategory = await HotelService.getFoodCategories();
         if (resFoodCategory.status === 200) {
@@ -138,7 +140,9 @@ const HotelGuide: React.FC = () => {
           dispatch(setToast({ message: 'Cannot get hotel food categories' }));
         }
 
-        if (!isMounted) return;
+        if (!isMounted) {
+          return;
+        }
 
         const resPolicies = await HotelService.getPolicies();
         if (resPolicies.status === 200) {
@@ -167,7 +171,9 @@ const HotelGuide: React.FC = () => {
           dispatch(setToast({ message: 'Cannot get hotel facilities' }));
         }
 
-        if (!isMounted) return;
+        if (!isMounted) {
+          return;
+        }
 
         const resArounds = await HotelService.getArounds();
         if (resArounds.status === 200) {
@@ -195,7 +201,9 @@ const HotelGuide: React.FC = () => {
           dispatch(setToast({ message: 'Cannot get hotel promotions' }));
         }
 
-        if (!isMounted) return;
+        if (!isMounted) {
+          return;
+        }
 
         const resEvents = await HotelService.getEvents();
         if (resEvents.status === 200) {
