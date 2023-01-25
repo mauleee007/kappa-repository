@@ -122,6 +122,7 @@ const HotelGuide: React.FC = () => {
         if (resRoom.status === 200) {
           if (isMounted) {
             setRooms(resRoom.data.data);
+            
           }
         } else {
           dispatch(setToast({ message: 'Cannot get hotel rooms' }));

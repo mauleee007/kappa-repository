@@ -172,15 +172,6 @@ const Room: React.FC<Props> = ({ room }) => {
   const { profile } = useSelector((s: RootState) => s.hotel);
   const { image, setImage } = useState(0);
 
-  useEffect(() => {
-    fetch(`${BASE_FILE_URL}`)
-      .then(res => {
-        return res.json();
-      })
-      .then(data => {
-        console.log(data);
-      });
-  }, []);
   return (
     <Card style={styles.card}>
       <FlatList
