@@ -52,12 +52,6 @@ const dataDummy: { id: number; name: string; text: string; img: string }[] = [
     text: 'Bale Gourmet',
     img: img5,
   },
-  {
-    id: 6,
-    name: 'Lianas',
-    text: 'Lianas',
-    img: img6,
-  },
 ];
 
 interface Props {
@@ -81,7 +75,7 @@ const Restaurant: React.FC<Props> = ({ categories }) => {
     <>
       <Card style={styles.card}>
         <FlatList
-          data={dataDummy}
+          data={data}
           numColumns={3}
           columnWrapperStyle={styles.listColWrapper}
           keyExtractor={item => item.id.toString()}
@@ -92,7 +86,10 @@ const Restaurant: React.FC<Props> = ({ categories }) => {
               source={item.img as ImageSourcePropType}
               style={styles.item}
               onPress={() => {
-                navigation.navigate('Restaurant', { category: item.id });
+                navigation.navigate('Restaurant', {
+                  categoryId: item.id,
+                  hotelId: item.hotelId,
+                });
               }}
             />
           )}
