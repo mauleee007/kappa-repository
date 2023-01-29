@@ -31,6 +31,7 @@ import appetizer3 from '../../assets/EpicurentNest/appetizer1.jpg';
 import maincourse1 from '../../assets/EpicurentNest/maincourse1.jpg';
 import maincourse2 from '../../assets/EpicurentNest/maincourse2.jpg';
 import maincourse3 from '../../assets/EpicurentNest/maincourse3.png';
+import ApiServices from '../../services/apis';
 type RestaurantRouteProp = RouteProp<RootStackParamList, 'Restaurant'>;
 
 interface menus {
@@ -45,163 +46,22 @@ interface datas {
   img: string;
 }
 
-const dataDummy: { id: number; data: datas[] }[] = [
-  {
-    id: 1,
-    data: [
-      {
-        id: 1,
-        name: 'Patti Samosa',
-        text: '"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit" ',
-        img: appetizer3,
-      },
-      {
-        id: 2,
-        name: 'Salmon Bites',
-        text: 'Appetizer',
-        img: appetizer2,
-      },
-      {
-        id: 3,
-        name: 'Grilled Shrimp',
-        text: 'Appetizer',
-        img: appetizer1,
-      },
-    ],
-  },
-  {
-    id: 2,
-    data: [
-      {
-        id: 1,
-        name: 'Pan Grill Salmon',
-        text: 'Main Course',
-        img: maincourse1,
-      },
-      {
-        id: 2,
-        name: 'Rib Eye',
-        text: 'Main COurse',
-        img: maincourse2,
-      },
-      {
-        id: 3,
-        name: 'Fish with Sauce',
-        text: 'Main Course',
-        img: maincourse3,
-      },
-    ],
-  },
-  {
-    id: 3,
-    data: [
-      {
-        id: 1,
-        name: 'Kepuh',
-        text: 'Kepuh',
-        img: 'http://192.168.1.10/images_local/img/Kepuh.jpg',
-      },
-    ],
-  },
-  {
-    id: 4,
-    data: [
-      {
-        id: 1,
-        name: 'Kokoan',
-        text: 'Kokoan',
-        img: 'http://192.168.1.10/images_local/img/Kokokan.jpg',
-      },
-    ],
-  },
-  {
-    id: 5,
-    data: [
-      {
-        id: 1,
-        name: 'Bale Gourmet',
-        text: 'Bale Gourmet',
-        img: 'http://192.168.1.10/images_local/img/Bale Gourmet.jpg',
-      },
-    ],
-  },
-  {
-    id: 6,
-    data: [
-      {
-        id: 1,
-        name: 'Lianas',
-        text: 'Lianas',
-        img: 'http://192.168.1.10/images_local/img/Lianas.jpg',
-      },
-    ],
-  },
-];
-
-const menuDummy: { id: number; menu: menus[] }[] = [
-  {
-    id: 1,
-    menu: [
-      { id: 1, name: 'Appetizer' },
-      { id: 2, name: 'Main Course' },
-      { id: 3, name: 'Dessert' },
-      { id: 4, name: 'Light Bites/Snacks' },
-      { id: 5, name: 'Beverages' },
-    ],
-  },
-  {
-    id: 2,
-    menu: [
-      { id: 1, name: 'Gallery' },
-      { id: 2, name: 'Featured Menu' },
-    ],
-  },
-  {
-    id: 3,
-    menu: [
-      { id: 1, name: 'Gallery' },
-      { id: 2, name: 'Featured Menu' },
-    ],
-  },
-  {
-    id: 4,
-    menu: [
-      { id: 1, name: 'Gallery' },
-      { id: 2, name: 'Featured Menu' },
-    ],
-  },
-  {
-    id: 5,
-    menu: [
-      { id: 1, name: 'Gallery' },
-      { id: 2, name: 'Featured Menu' },
-    ],
-  },
-  {
-    id: 6,
-    menu: [
-      { id: 1, name: 'Gallery' },
-      { id: 2, name: 'Featured Menu' },
-    ],
-  },
-];
-
-const Restaurant: React.FC = () => {
+const Restaurant: React.FC<RestaurantRouteProp> = () => {
   const route = useRoute<RestaurantRouteProp>();
-  const [category, setCategory] = useState(route.params.category);
-  const [idCategory] = useState(route.params.category);
+  const [category, setCategory] = useState(route.params.categoryId);
+  const [categoryId] = useState(route.params.categoryId);
+  const [hotelId] = useState(route.params.hotelId);
   const [foodCategories, setFoodCategories] = useState<FoodCategory[]>([]);
   const [foods, setFoods] = useState<Food[]>([]);
   const [loading, setLoading] = useState(false);
   const [order, setOrder] = useState(false);
   const [qty, setQty] = useState('1');
-  const [Dummy, setDummy] = useState(1);
   const [selectedMenuIdx, setSelectedMenuIdx] = useState(0);
 
-  function setData(id: React.SetStateAction<number>) {
-    setCategory(id);
-    setDummy(id);
-  }
+  // function setData(id: React.SetStateAction<number>) {
+  //   setCategory(id);
+  //   console.log(foods);
+  // }
 
   // const ref = useRef<View>(null);
   const textRef = useRef<TextInput>(null);
@@ -217,9 +77,13 @@ const Restaurant: React.FC = () => {
     const getFoodCategories = async () => {
       setLoading(true);
       try {
-        const resFoodCategory = await HotelService.getFoodCategories();
+        const resFoodCategory = await ApiServices.getFoodCategories(
+          hotelId,
+          categoryId,
+        );
         if (resFoodCategory.status === 200) {
           setFoodCategories(resFoodCategory.data.data);
+          console.log(foodCategories);
         } else {
           ToastAndroid.show('Cannot get categories', ToastAndroid.SHORT);
         }
@@ -236,9 +100,16 @@ const Restaurant: React.FC = () => {
     const getFoods = async () => {
       setLoading(true);
       try {
-        const resFood = await HotelService.getFoods();
+        const resFood = await ApiServices.getFoods(hotelId, categoryId);
         if (resFood.status === 200) {
-          setFoods(resFood.data.data);
+          setFoods(
+            resFood.data.data
+              .filter(
+                (data: { foodCategoryId: number }) =>
+                  data.foodCategoryId === category,
+              )
+              .map((data: any) => data),
+          );
         } else {
           ToastAndroid.show('Cannot get hotel menu', ToastAndroid.SHORT);
         }
@@ -248,8 +119,10 @@ const Restaurant: React.FC = () => {
       setLoading(false);
     };
 
-    getFoods();
-  }, []);
+    if (category) {
+      getFoods();
+    }
+  }, [category, categoryId, hotelId]);
 
   return (
     <BaseLayout profile={profile} style={styles.root}>
@@ -260,16 +133,16 @@ const Restaurant: React.FC = () => {
           )}
           {(!loading || foodCategories.length > 0) && (
             <FlatList
-              data={menuDummy[idCategory - 1].menu}
+              data={categories}
               keyExtractor={item => item.id.toString()}
               renderItem={({ item }) => (
                 <TextMenuItem
                   key={item.id}
                   activeColor={profile?.primaryColor}
-                  preferredFocus={Dummy === item.id}
-                  active={Dummy === item.id}
+                  preferredFocus={category === item.id}
+                  active={category === item.id}
                   title={item.name}
-                  onFocus={() => setData(item)}
+                  onFocus={() => setCategory(item.id)}
                 />
               )}
             />
@@ -279,12 +152,12 @@ const Restaurant: React.FC = () => {
           <FlatList
             removeClippedSubviews={false}
             numColumns={2}
-            data={dataDummy[0].data}
+            data={foods}
             renderItem={({ item }) => (
               <ImageItem
                 key={item.id}
                 activeColor={profile?.primaryColor}
-                source={item.img as ImageSourcePropType}
+                source={{ uri: `${BASE_FILE_URL}/${item.img}` }}
                 text={item.name}
                 style={styles.item}
                 onFocus={() => setSelectedMenuIdx(item.id)}
@@ -302,16 +175,16 @@ const Restaurant: React.FC = () => {
             <Text style={styles.title}>Select Menu</Text>
           )}
 
-          {Dummy && (
+          {selectedMenu && (
             <>
               <Image
-                source={dataDummy[0].data[0].img as ImageSourcePropType}
+                source={{ uri: `${BASE_FILE_URL}/${selectedMenu.img}` }}
                 resizeMode="cover"
-                style={styles.image}  
+                style={styles.image}
               />
 
-              <Text style={styles.title}>{dataDummy[0].data[0].name}</Text>
-              <Text style={styles.desc}>{dataDummy[0].data[0].text}</Text>
+              <Text style={styles.title}>{selectedMenu.name}</Text>
+              <Text style={styles.desc}>{selectedMenu.description}</Text>
               <Text style={styles.price}>
                 IDR.{' '}
                 {formatNumber(selectedMenu == null ? 0 : selectedMenu.price)},-

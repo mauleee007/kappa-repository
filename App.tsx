@@ -20,7 +20,7 @@ export type RootStackParamList = {
   Drawer: undefined;
   FullscreenTV: { url: string; streamId: number };
   HotelGuide: undefined;
-  Restaurant: { category: number };
+  Restaurant: { categoryId: number; hotelId: number };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();

@@ -14,6 +14,7 @@ import Promos from '../../components/fragments/Promos';
 import Restaurant from '../../components/fragments/Restaurant';
 import Room from '../../components/fragments/Room';
 import RoomTypes from '../../components/fragments/RoomTypes';
+import ApiServices from '../../services/apis';
 import HotelService from '../../services/hotels';
 import { AppDispatch, RootState } from '../../stores';
 import { getHotels } from '../../stores/hotel';
@@ -118,6 +119,20 @@ const HotelGuide: React.FC = () => {
 
       setLoading(l => l + 1);
       try {
+        const resFoodCategory = await ApiServices.getRestaurant(hotel.id);
+        if (resFoodCategory.status === 200) {
+          console.log(resFoodCategory);
+
+          if (isMounted) {
+            setFoodCategories(resFoodCategory.data.data);
+          }
+        } else {
+          dispatch(setToast({ message: 'Cannot get hotel food categories' }));
+        }
+
+        if (!isMounted) {
+          return;
+        }
         const resRoom = await HotelService.getRooms(hotel.id);
         if (resRoom.status === 200) {
           if (isMounted) {
@@ -125,19 +140,6 @@ const HotelGuide: React.FC = () => {
           }
         } else {
           dispatch(setToast({ message: 'Cannot get hotel rooms' }));
-        }
-
-        if (!isMounted) {
-          return;
-        }
-
-        const resFoodCategory = await HotelService.getFoodCategories();
-        if (resFoodCategory.status === 200) {
-          if (isMounted) {
-            setFoodCategories(resFoodCategory.data.data);
-          }
-        } else {
-          dispatch(setToast({ message: 'Cannot get hotel food categories' }));
         }
 
         if (!isMounted) {

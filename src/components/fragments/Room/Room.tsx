@@ -1,27 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import {
+  BackHandler,
+  FlatList,
   Image,
   StyleSheet,
   Text,
   View,
-  FlatList,
-  ImageSourcePropType,
-  BackHandler,
 } from 'react-native';
-import { BASE_FILE_URL } from '../../../services/utils';
-import Card from '../../elements/Card';
-import img1 from '../../../assets/DanuRetreat/OneBedroomPoolVilla.jpg';
-import img2 from '../../../assets/DanuRetreat/OneBedroomPoolVillawithView.jpg';
-import img3 from '../../../assets/DanuRetreat/TwoBedroomPoolVilla.jpg';
+import { useDispatch, useSelector } from 'react-redux';
 import img4 from '../../../assets/DanuJungle/DeluxePoolVilla.jpg';
 import img5 from '../../../assets/DanuJungle/DeluxeSuitewithPrivateHotTub.jpg';
 import img6 from '../../../assets/DanuJungle/JungleSuite.jpg';
-import ImageItem from '../RoomTypes/ImageItem';
-import { useDispatch, useSelector } from 'react-redux';
+import img1 from '../../../assets/DanuRetreat/OneBedroomPoolVilla.jpg';
+import img2 from '../../../assets/DanuRetreat/OneBedroomPoolVillawithView.jpg';
+import img3 from '../../../assets/DanuRetreat/TwoBedroomPoolVilla.jpg';
+import ApiServices from '../../../services/apis';
+import { BASE_FILE_URL } from '../../../services/utils';
 import { AppDispatch, RootState } from '../../../stores';
 import { setToast } from '../../../stores/ui';
-import ApiServices from '../../../services/apis';
-import HotelService from '../../../services/hotels';
+import Card from '../../elements/Card';
+import ImageItem from '../RoomTypes/ImageItem';
 
 type Props = {
   room: Room;
@@ -29,6 +27,7 @@ type Props = {
 
 type DanuProps = {
   room: Room;
+  dataRoom: ListImg[];
   detail: DanuDetail;
   onBack: () => void;
 };
@@ -100,7 +99,7 @@ const ListImageEx: ListImg = {
     'One Bedroom Pool Villas are private sanctuaries set within the divine Danu Retreat. Surrounded by tropical foliage, these conscientiously designed one-bedroom villas offer ample space to relax and unwind. Spend endless days relaxing in the villa spacious bedroom and recharge waterside by the private infinity swimming pool.',
 };
 
-const DescDanu: React.FC<DanuProps> = ({ room, onBack }) => {
+const DescDanu: React.FC<DanuProps> = ({ room, dataRoom, onBack }) => {
   const [listImg, setListImg] = useState<ListImg[]>([]);
   const { hotel, profile, cctvUrl } = useSelector((s: RootState) => s.hotel);
   const [selectedMenuIdx, setSelectedMenuIdx] = useState(0);
@@ -121,38 +120,6 @@ const DescDanu: React.FC<DanuProps> = ({ room, onBack }) => {
     return () => backHandler.remove();
   }, [onBack]);
 
-  useEffect(() => {
-    let isMounted = true;
-
-    const getListImg = async () => {
-      if (hotel == null) {
-        return;
-      }
-
-      try {
-        const resDanuRetreat = await ApiServices.getDanu(hotel.id, room.id);
-        console.log(resDanuRetreat);
-        if (resDanuRetreat.status === 200) {
-          if (isMounted) {
-            setListImg(resDanuRetreat.data.data);
-          }
-        } else {
-          dispatch(setToast({ message: 'Cannot get hotel rooms' }));
-        }
-
-        if (!isMounted) {
-          return;
-        }
-      } catch (err) {
-        console.log(err);
-        dispatch(setToast({ message: 'Cannot get information' }));
-      }
-      // setLoading(l => l - 1);
-    };
-
-    getListImg();
-  }, [dispatch]);
-
   return (
     <View style={styles.container}>
       <View style={styles.cardMiddle}>
@@ -163,7 +130,7 @@ const DescDanu: React.FC<DanuProps> = ({ room, onBack }) => {
           numColumns={2}
           style={styles.menuList}
           keyExtractor={item => item.id.toString()}
-          data={listImg}
+          data={dataRoom}
           renderItem={({ item, index }) => (
             <ImageItem
               key={item.id}
@@ -178,7 +145,7 @@ const DescDanu: React.FC<DanuProps> = ({ room, onBack }) => {
         />
       </View>
 
-      {listImg.length > 0 && (
+      {dataRoom.length > 0 && (
         <View style={styles.cardRight}>
           <Image
             source={{ uri: `${BASE_FILE_URL}/${ListImage.img}` }}
@@ -197,6 +164,41 @@ const Room: React.FC<Props> = ({ room }) => {
   const [detail, setDetail] = useState<DanuDetail | null>(null);
   const { profile } = useSelector((s: RootState) => s.hotel);
   const { image, setImage } = useState(0);
+  const [listImg, setListImg] = useState<ListImg[]>([]);
+  const { hotel, cctvUrl } = useSelector((s: RootState) => s.hotel);
+  const [ListImage, setListImage] = useState<ListImg | null>(ListImageEx);
+
+  const dispatch = useDispatch<AppDispatch>();
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const getListImg = async () => {
+      if (hotel == null) {
+        return;
+      }
+
+      try {
+        const resDanuRetreat = await ApiServices.getDanu(hotel.id, room.id);
+        if (resDanuRetreat.status === 200) {
+          if (isMounted) {
+            setListImg(resDanuRetreat.data.data);
+          }
+        } else {
+          dispatch(setToast({ message: 'Cannot get hotel rooms' }));
+        }
+
+        if (!isMounted) {
+          return;
+        }
+      } catch (err) {
+        console.log(err);
+        dispatch(setToast({ message: 'Cannot get information' }));
+      }
+    };
+
+    getListImg();
+  }, [dispatch]);
 
   useEffect(() => {
     fetch(`${BASE_FILE_URL}`)
@@ -211,7 +213,7 @@ const Room: React.FC<Props> = ({ room }) => {
     <Card style={styles.card}>
       <FlatList
         horizontal
-        data={[room]}
+        data={listImg}
         keyExtractor={item => item.id.toString()}
         style={[styles.list, { display: detail == null ? 'flex' : 'none' }]}
         renderItem={({ item }) => (
@@ -225,7 +227,12 @@ const Room: React.FC<Props> = ({ room }) => {
         )}
       />
       {detail != null && (
-        <DescDanu detail={detail} room={room} onBack={() => setDetail(null)} />
+        <DescDanu
+          detail={detail}
+          dataRoom={listImg}
+          room={room}
+          onBack={() => setDetail(null)}
+        />
       )}
     </Card>
   );
