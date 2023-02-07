@@ -376,13 +376,7 @@ const KappaDetail: React.FC<KappaProps> = ({ kappa, onBack }) => {
             text={item.name}
             style={styles.item}
             onPress={() => {
-              if (item.id === 1) {
-                setDetail(item);
-              } else if (item.id === 2) {
-                // setKappa(item);
-              } else if (item.id === 3) {
-                // setDetail(item);
-              }
+              setDetail(item);
             }}
           />
         )}
