@@ -365,15 +365,7 @@ const KappaDetail: React.FC<KappaProps> = ({ kappa, onBack }) => {
             source={{ uri: `${BASE_FILE_URL}/${item.img}` }}
             text={item.name}
             style={styles.item}
-            onPress={() => {
-              if (item.id === 1) {
-                setDetail(item);
-              } else if (item.id === 2) {
-                // setKappa(item);
-              } else if (item.id === 3) {
-                // setDetail(item);
-              }
-            }}
+            onPress={() => setDetail(item)}
           />
         )}
       />
@@ -392,7 +384,7 @@ const DetailKappaInstant: React.FC<KappaProps> = ({ kappa, onBack }) => {
   const [Dummy] = useState(1);
   const { profile } = useSelector((s: RootState) => s.hotel);
   const [detailKappa, setKappa] = useState<Kappa[]>([]);
-  const [choiceItem, setChoiceItem] = useState(0);
+  const [choiceItem, setChoiceItem] = useState<Kappa | null>(null);
   useEffect(() => {
     const backAction = () => {
       onBack();
@@ -432,6 +424,18 @@ const DetailKappaInstant: React.FC<KappaProps> = ({ kappa, onBack }) => {
     getHotelProfile();
   }, []);
 
+  function setChoice(id?: number) {
+    const result = detailKappa
+      .map(e => {
+        return e;
+      })
+      .filter(e => e.id === id);
+    console.log(result);
+
+    setChoiceItem(result[0]);
+    console.log(choiceItem);
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.cardMiddle}>
@@ -450,22 +454,22 @@ const DetailKappaInstant: React.FC<KappaProps> = ({ kappa, onBack }) => {
               text={item.name}
               activeColor={profile?.primaryColor}
               source={{ uri: `${BASE_FILE_URL}/${item.img}` }}
-              onFocus={() => setChoiceItem(item.id - 2)}
+              onFocus={() => setChoice(item.id)}
               style={styles.item3}
             />
           )}
         />
       </View>
 
-      {detailKappa.length > 0 && (
+      {choiceItem && (
         <View style={styles.cardRight}>
           <Image
-            source={{ uri: `${BASE_FILE_URL}/${detailKappa[choiceItem].img}` }}
+            source={{ uri: `${BASE_FILE_URL}/${choiceItem.img}` }}
             resizeMode="cover"
             style={styles.image}
           />
-          <Text style={styles.title2}>{detailKappa[choiceItem].name}</Text>
-          <Text style={styles.desc}>{detailKappa[choiceItem].description}</Text>
+          <Text style={styles.title2}>{choiceItem.name}</Text>
+          <Text style={styles.desc}>{choiceItem.description}</Text>
         </View>
       )}
     </View>
