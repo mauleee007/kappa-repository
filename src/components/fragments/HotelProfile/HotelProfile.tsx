@@ -38,6 +38,7 @@ import { setProfile } from '../../../stores/hotel';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../stores';
 import id from 'date-fns/esm/locale/id/index.js';
+import { BASE_FILE_URL } from '../../../services/utils';
 
 const Data: HotelProfileDetail[] = [
   {
@@ -158,7 +159,7 @@ type KappaProps = {
 };
 
 type GlProps = {
-  gallery: Galery;
+  dataGallery: ListGallery[];
   onBack: () => void;
 };
 
@@ -173,7 +174,17 @@ type HotelProps = {
 };
 
 //page detail gallery
-const GalleryDetail: React.FC<GlProps> = ({ gallery, onBack }) => {
+interface ListGallery {
+  id: number;
+  roomId: number;
+  img: string;
+  name: string;
+  description?: string;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  deletedAt?: Date | string;
+}
+const GalleryDetail: React.FC<GlProps> = ({ dataGallery, onBack }) => {
   const { profile } = useSelector((s: RootState) => s.hotel);
   useEffect(() => {
     const backAction = () => {
@@ -195,10 +206,10 @@ const GalleryDetail: React.FC<GlProps> = ({ gallery, onBack }) => {
         numColumns={3}
         columnWrapperStyle={styles.listColWrapper}
         keyExtractor={item => item.id.toString()}
-        renderItem={({ item }) => (
+        renderItem={({ item, index }) => (
           <ImageItem
             activeColor={profile?.primaryColor}
-            preferredFocus={item.id === 1}
+            preferredFocus={index === 0}
             key={item.id}
             source={item.img as ImageSourcePropType}
             style={styles.item2}
@@ -359,7 +370,7 @@ const DetailKappaInstant: React.FC<KappaProps> = ({ kappa, onBack }) => {
 //main-page
 const HotelProfile: React.FC<Props> = ({ profile }) => {
   const [detail, setDetail] = useState<HotelProfileDetail | null>(null);
-  const [detailGallery, setGallery] = useState<Galery | null>(null);
+  const [detailGallery, setGallery] = useState<ListGallery[] | null>(null);
   const [detailKappa, setKappa] = useState<KappaInstants | null>(null);
 
   // const { profile } = useSelector((s: RootState) => s.hotel);
@@ -407,7 +418,7 @@ const HotelProfile: React.FC<Props> = ({ profile }) => {
         )}
         {detailGallery != null && (
           <GalleryDetail
-            gallery={detailGallery}
+            dataGallery={detailGallery}
             onBack={() => setGallery(null)}
           />
         )}
