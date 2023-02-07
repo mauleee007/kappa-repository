@@ -7,6 +7,7 @@ import {
   View,
   FlatList,
   ImageSourcePropType,
+  ToastAndroid,
 } from 'react-native';
 import { normalize } from '../../../utils/scaling';
 import Card from '../../elements/Card';
@@ -34,10 +35,11 @@ import beyond4 from '../../../assets/HotelProfile/KappaInstant/BeyondKappaSenses
 import beyond5 from '../../../assets/HotelProfile/KappaInstant/BeyondKappaSensesUbud/YogaShala3.jpg';
 
 import { NavigationContainer, useFocusEffect } from '@react-navigation/native';
-import { setProfile } from '../../../stores/hotel';
+import hotel, { setProfile } from '../../../stores/hotel';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../stores';
 import id from 'date-fns/esm/locale/id/index.js';
+import ApiServices from '../../../services/apis';
 import { BASE_FILE_URL } from '../../../services/utils';
 
 const Data: HotelProfileDetail[] = [
@@ -89,18 +91,6 @@ const dataGalery: Galery[] = [
   {
     id: 5,
     img: galery5,
-  },
-  {
-    id: 6,
-    img: galery6,
-  },
-  {
-    id: 7,
-    img: galery7,
-  },
-  {
-    id: 8,
-    img: galery8,
   },
 ];
 
@@ -173,6 +163,28 @@ type HotelProps = {
   onBack: () => void;
 };
 
+interface Galery {
+  id: number;
+  hotelId?: number;
+  name?: string;
+  description?: string;
+  img: string | import('react-native').ImageSourcePropType;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  deletedAt?: Date | string;
+}
+
+interface Kappa {
+  id: number;
+  hotelId?: number;
+  name?: string;
+  description?: string;
+  img: string | import('react-native').ImageSourcePropType;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  deletedAt?: Date | string;
+}
+
 //page detail gallery
 interface ListGallery {
   id: number;
@@ -186,6 +198,7 @@ interface ListGallery {
 }
 const GalleryDetail: React.FC<GlProps> = ({ dataGallery, onBack }) => {
   const { profile } = useSelector((s: RootState) => s.hotel);
+  const [detailGallery, setGallery] = useState<Galery[]>([]);
   useEffect(() => {
     const backAction = () => {
       onBack();
@@ -199,10 +212,32 @@ const GalleryDetail: React.FC<GlProps> = ({ dataGallery, onBack }) => {
     return () => backHandler.remove();
   }, [onBack]);
 
+  useEffect(() => {
+    const getGallery = async () => {
+      // setLoading(true);
+      try {
+        const resGallery = await ApiServices.getGallery();
+        console.log(resGallery.data.data);
+        if (resGallery.status === 200) {
+          setGallery(resGallery.data.data);
+        } else {
+          console.log(resGallery);
+          ToastAndroid.show('Cannot get galleries', ToastAndroid.SHORT);
+        }
+      } catch (err) {
+        console.log(err);
+        ToastAndroid.show('Cannot get galleries', ToastAndroid.SHORT);
+      }
+      setLoading(false);
+    };
+
+    getGallery();
+  }, []);
+
   return (
     <>
       <FlatList
-        data={dataGalery}
+        data={detailGallery}
         numColumns={3}
         columnWrapperStyle={styles.listColWrapper}
         keyExtractor={item => item.id.toString()}
@@ -211,7 +246,7 @@ const GalleryDetail: React.FC<GlProps> = ({ dataGallery, onBack }) => {
             activeColor={profile?.primaryColor}
             preferredFocus={index === 0}
             key={item.id}
-            source={item.img as ImageSourcePropType}
+            source={{ uri: `${BASE_FILE_URL}/${item.img}` }}
             style={styles.item2}
             // onPress={() =>
             //   navigation.navigate('Restaurant', { category: item.id })
@@ -225,6 +260,7 @@ const GalleryDetail: React.FC<GlProps> = ({ dataGallery, onBack }) => {
 
 //page detail hotel(An Eden & Philosopy)
 const DescHotel: React.FC<HotelProps> = ({ detail, onBack }) => {
+  const [hotelProfile, setHotelprofile] = useState({});
   useEffect(() => {
     const backAction = () => {
       onBack();
@@ -238,13 +274,42 @@ const DescHotel: React.FC<HotelProps> = ({ detail, onBack }) => {
     return () => backHandler.remove();
   }, [onBack]);
 
+  useEffect(() => {
+    const getHotelProfile = async () => {
+      // setLoading(true);
+      try {
+        const resHotelProfile = await ApiServices.getHotelProfile(detail.id);
+        console.log(resHotelProfile.data.data);
+        if (resHotelProfile.status === 200) {
+          setHotelprofile(resHotelProfile.data.data);
+        } else {
+          console.log(resHotelProfile);
+          ToastAndroid.show('Cannot get galleries', ToastAndroid.SHORT);
+        }
+      } catch (err) {
+        console.log(err);
+        ToastAndroid.show('Cannot get galleries', ToastAndroid.SHORT);
+      }
+      // setLoading(false);
+    };
+
+    getHotelProfile();
+  }, [onBack]);
+
   return (
     <View style={styles.profileRoot}>
-      <Image source={detail.img} style={styles.profileImg} />
+      <Image
+        source={{
+          uri: `${BASE_FILE_URL}/${hotelProfile.mainPhoto ?? hotelProfile.img}`,
+        }}
+        style={styles.profileImg}
+      />
       <View style={styles.descContainer}>
         <View style={styles.background} />
-        <Text style={styles.title}>{detail.title}</Text>
-        <Text style={styles.desc}>{detail.description}</Text>
+        <Text style={styles.title}>{hotelProfile.title ?? detail.title}</Text>
+        <Text style={styles.desc}>
+          {hotelProfile.description ?? 'An Eden description'}
+        </Text>
       </View>
     </View>
   );
@@ -253,6 +318,7 @@ const DescHotel: React.FC<HotelProps> = ({ detail, onBack }) => {
 //page kappa instants
 const KappaDetail: React.FC<KappaProps> = ({ kappa, onBack }) => {
   const [detailPageKappa, setDetail] = useState<KappaInstants | null>(null);
+  const [detailKappa, setKappa] = useState<Kappa[]>([]);
   const { profile } = useSelector((s: RootState) => s.hotel);
   useEffect(() => {
     const backAction = () => {
@@ -267,11 +333,33 @@ const KappaDetail: React.FC<KappaProps> = ({ kappa, onBack }) => {
     return () => backHandler.remove();
   }, [onBack]);
 
+  useEffect(() => {
+    const getHotelProfile = async () => {
+      // setLoading(true);
+      try {
+        const resHotelProfile = await ApiServices.getHotelProfile(kappa.id);
+        console.log(resHotelProfile.data.data);
+        if (resHotelProfile.status === 200) {
+          setKappa(resHotelProfile.data.data);
+        } else {
+          console.log(resHotelProfile);
+          ToastAndroid.show('Cannot get galleries', ToastAndroid.SHORT);
+        }
+      } catch (err) {
+        console.log(err);
+        ToastAndroid.show('Cannot get galleries', ToastAndroid.SHORT);
+      }
+      // setLoading(false);
+    };
+
+    getHotelProfile();
+  }, [onBack]);
+
   return (
     <>
       <FlatList
         horizontal
-        data={dataKappa}
+        data={detailKappa}
         keyExtractor={item => item.id.toString()}
         style={[
           styles.list,
@@ -284,8 +372,8 @@ const KappaDetail: React.FC<KappaProps> = ({ kappa, onBack }) => {
             activeColor={profile?.primaryColor}
             preferredFocus={item.id === 1}
             key={item.id}
-            source={item.img as ImageSourcePropType}
-            text={item.title}
+            source={{ uri: `${BASE_FILE_URL}/${item.img}` }}
+            text={item.name}
             style={styles.item}
             onPress={() => {
               if (item.id === 1) {
@@ -313,6 +401,8 @@ const KappaDetail: React.FC<KappaProps> = ({ kappa, onBack }) => {
 const DetailKappaInstant: React.FC<KappaProps> = ({ kappa, onBack }) => {
   const [Dummy] = useState(1);
   const { profile } = useSelector((s: RootState) => s.hotel);
+  const [detailKappa, setKappa] = useState<Kappa[]>([]);
+  const [choiceItem, setChoiceItem] = useState(0);
   useEffect(() => {
     const backAction = () => {
       onBack();
@@ -326,6 +416,32 @@ const DetailKappaInstant: React.FC<KappaProps> = ({ kappa, onBack }) => {
     return () => backHandler.remove();
   }, [onBack]);
 
+  useEffect(() => {
+    const getHotelProfile = async () => {
+      // setLoading(true);
+      try {
+        const resHotelProfile = await ApiServices.getHotelProfile(
+          100,
+          kappa.id,
+        );
+        console.log(resHotelProfile.data.data);
+
+        if (resHotelProfile.status === 200) {
+          setKappa(resHotelProfile.data.data);
+        } else {
+          console.log(resHotelProfile);
+          ToastAndroid.show('Cannot get galleries', ToastAndroid.SHORT);
+        }
+      } catch (err) {
+        console.log(err);
+        ToastAndroid.show('Cannot get galleries', ToastAndroid.SHORT);
+      }
+      // setLoading(false);
+    };
+
+    getHotelProfile();
+  }, []);
+
   return (
     <View style={styles.container}>
       <View style={styles.cardMiddle}>
@@ -336,34 +452,32 @@ const DetailKappaInstant: React.FC<KappaProps> = ({ kappa, onBack }) => {
           numColumns={2}
           style={styles.menuList}
           keyExtractor={item => item.id.toString()}
-          data={dataKappa[Dummy - 1].detail}
+          data={detailKappa}
           renderItem={({ item }) => (
             <ImageItem
               key={item.id}
               preferredFocus={Dummy === item.id}
-              text={item.title}
+              text={item.name}
               activeColor={profile?.primaryColor}
-              source={item.img as ImageSourcePropType}
-              // text={item.text}
+              source={{ uri: `${BASE_FILE_URL}/${item.img}` }}
+              onFocus={() => setChoiceItem(item.id - 2)}
               style={styles.item3}
             />
           )}
         />
       </View>
 
-      <View style={styles.cardRight}>
-        <Image
-          source={dataKappa[Dummy - 1].detail[0].img}
-          resizeMode="cover"
-          style={styles.image}
-        />
-        <Text style={styles.title2}>
-          {dataKappa[Dummy - 1].detail[0].title}
-        </Text>
-        <Text style={styles.desc}>
-          {dataKappa[Dummy - 1].detail[0].description}
-        </Text>
-      </View>
+      {detailKappa.length > 0 && (
+        <View style={styles.cardRight}>
+          <Image
+            source={{ uri: `${BASE_FILE_URL}/${detailKappa[choiceItem].img}` }}
+            resizeMode="cover"
+            style={styles.image}
+          />
+          <Text style={styles.title2}>{detailKappa[choiceItem].name}</Text>
+          <Text style={styles.desc}>{detailKappa[choiceItem].description}</Text>
+        </View>
+      )}
     </View>
   );
 };

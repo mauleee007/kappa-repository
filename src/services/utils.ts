@@ -8,6 +8,7 @@ const url2 = '34.101.244.235';
 // const url = '103.30.87.52'; // Production Server
 // const url = '172.17.1.248';
 export const BASE_URL = `http://${url2}:3001`;
+export const BASE_URLL = `http://${url2}:3001`;
 
 // export const BASE_URL = `http://${url}:8001`;
 export const BASE_FILE_URL = `http://${url2}:3001/files`;
