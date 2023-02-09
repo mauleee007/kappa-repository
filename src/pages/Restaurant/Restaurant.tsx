@@ -32,6 +32,7 @@ import maincourse1 from '../../assets/EpicurentNest/maincourse1.jpg';
 import maincourse2 from '../../assets/EpicurentNest/maincourse2.jpg';
 import maincourse3 from '../../assets/EpicurentNest/maincourse3.png';
 import ApiServices from '../../services/apis';
+import hotel from '../../stores/hotel';
 type RestaurantRouteProp = RouteProp<RootStackParamList, 'Restaurant'>;
 
 interface menus {
@@ -52,11 +53,13 @@ const Restaurant: React.FC<RestaurantRouteProp> = () => {
   const [categoryId] = useState(route.params.categoryId);
   const [hotelId] = useState(route.params.hotelId);
   const [foodCategories, setFoodCategories] = useState<FoodCategory[]>([]);
+  const [extentionCall, setExtentionCall] = useState<RestoCategory[]>([]);
   const [foods, setFoods] = useState<Food[]>([]);
   const [loading, setLoading] = useState(false);
   const [order, setOrder] = useState(false);
   const [qty, setQty] = useState('1');
   const [selectedMenuIdx, setSelectedMenuIdx] = useState(0);
+  // const [index, setIndex] = useState(0);
 
   // function setData(id: React.SetStateAction<number>) {
   //   setCategory(id);
@@ -67,11 +70,31 @@ const Restaurant: React.FC<RestaurantRouteProp> = () => {
   const textRef = useRef<TextInput>(null);
   const { profile } = useSelector((s: RootState) => s.hotel);
   const selectedMenu = foods.find(v => v.id === selectedMenuIdx);
+  const extention = extentionCall.find(v => v.id === categoryId);
 
   const categories: FoodCategory[] = useMemo(
     () => [...foodCategories],
     [foodCategories],
   );
+
+  useEffect(() => {
+    const getExtentionCall = async () => {
+      setLoading(true);
+      try {
+        const resExention = await ApiServices.getRestaurant(hotelId);
+        if (resExention.status === 200) {
+          setExtentionCall(resExention.data.data);
+          // console.log(extentionCall);
+        } else {
+          ToastAndroid.show('Cannot get categories', ToastAndroid.SHORT);
+        }
+      } catch {
+        ToastAndroid.show('Cannot get categories', ToastAndroid.SHORT);
+      }
+      setLoading(false);
+    };
+    getExtentionCall();
+  }, [hotelId]);
 
   useEffect(() => {
     const getFoodCategories = async () => {
@@ -83,7 +106,7 @@ const Restaurant: React.FC<RestaurantRouteProp> = () => {
         );
         if (resFoodCategory.status === 200) {
           setFoodCategories(resFoodCategory.data.data);
-          console.log(foodCategories);
+          // console.log(foodCategories);
         } else {
           ToastAndroid.show('Cannot get categories', ToastAndroid.SHORT);
         }
@@ -123,7 +146,7 @@ const Restaurant: React.FC<RestaurantRouteProp> = () => {
       getFoods();
     }
   }, [category, categoryId, hotelId]);
-
+  // console.log(extention);
   return (
     <BaseLayout profile={profile} style={styles.root}>
       <View style={styles.container}>
@@ -149,9 +172,35 @@ const Restaurant: React.FC<RestaurantRouteProp> = () => {
           )}
         </Card>
         <Card style={[styles.menu, styles.cardMiddle]}>
+          {categories.find(v => v.id === category) != null &&
+            categories.find(v => v.id === category)?.name === 'Gallery' && (
+              <>
+                <FlatList
+                  removeClippedSubviews={false}
+                  numColumns={3}
+                  columnWrapperStyle={styles.listColWrapper}
+                  data={foods}
+                  renderItem={({ item }) => (
+                    <ImageItem
+                      key={item.id}
+                      activeColor={profile?.primaryColor}
+                      source={{ uri: `${BASE_FILE_URL}/${item.img}` }}
+                      text={item.name}
+                      style={styles.item2}
+                      onFocus={() => setSelectedMenuIdx(item.id)}
+                      onPress={() => {
+                        // setOrder(true);yy
+                      }}
+                    />
+                  )}
+                  style={styles.menuList}
+                />
+              </>
+            )}
           <FlatList
             removeClippedSubviews={false}
             numColumns={2}
+            columnWrapperStyle={styles.listColWrapper}
             data={foods}
             renderItem={({ item }) => (
               <ImageItem
@@ -169,29 +218,42 @@ const Restaurant: React.FC<RestaurantRouteProp> = () => {
             style={styles.menuList}
           />
         </Card>
-
-        <Card style={[styles.card, styles.cardRight]}>
-          {selectedMenu == null && (
-            <Text style={styles.title}>Select Menu</Text>
-          )}
-
-          {selectedMenu && (
+        {categories.find(v => v.id === category) != null &&
+          categories.find(v => v.id === category)?.name !== 'Gallery' && (
             <>
-              <Image
-                source={{ uri: `${BASE_FILE_URL}/${selectedMenu.img}` }}
-                resizeMode="cover"
-                style={styles.image}
-              />
+              <Card style={[styles.card, styles.cardRight]}>
+                {selectedMenu == null && (
+                  <Text style={styles.title}>Select Menu</Text>
+                )}
+                {selectedMenu && (
+                  <>
+                    <Image
+                      source={{ uri: `${BASE_FILE_URL}/${selectedMenu.img}` }}
+                      resizeMode="cover"
+                      style={styles.image}
+                    />
 
-              <Text style={styles.title}>{selectedMenu.name}</Text>
-              <Text style={styles.desc}>{selectedMenu.description}</Text>
-              <Text style={styles.price}>
-                IDR.{' '}
-                {formatNumber(selectedMenu == null ? 0 : selectedMenu.price)},-
-              </Text>
+                    <Text style={styles.title}>{selectedMenu.name}</Text>
+                    <Text style={styles.desc}>{selectedMenu.description}</Text>
+                    {categories.find(v => v.id === category) != null &&
+                      categories.find(v => v.id === category)?.name !==
+                        'Featured Menu' && (
+                        <>
+                          <Text style={styles.price}>
+                            IDR.{' '}
+                            {formatNumber(
+                              selectedMenu == null ? 0 : selectedMenu.price,
+                            )}
+                            ,-
+                          </Text>
+                        </>
+                      )}
+                    <Text style={styles.desc}>{extention?.contact}</Text>
+                  </>
+                )}  
+              </Card>
             </>
           )}
-        </Card>
       </View>
 
       <Modal

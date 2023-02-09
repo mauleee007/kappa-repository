@@ -13,7 +13,7 @@ import { normalize } from '../../../utils/scaling';
 import Card from '../../elements/Card';
 import ImageItem from '../RoomTypes/ImageItem';
 import img1 from '../../../assets/HotelProfile/AnEden.jpg';
-import img2 from '../../../assets/HotelProfile/KappaInstants.jpg';
+import img2 from '../../../assets/HotelProfile/YogaShala3-2.jpg';
 import img3 from '../../../assets/HotelProfile/Philosophy_.jpg';
 import img4 from '../../../assets/HotelProfile/Permaculture.jpg';
 import galery1 from '../../../assets/Gallery/Drone-KappaSensesUbud4.jpg';
@@ -359,6 +359,8 @@ const KappaDetail: React.FC<KappaProps> = ({ kappa, onBack }) => {
     <>
       <FlatList
         horizontal
+        focusable
+        hasTVPreferredFocus
         data={detailKappa}
         keyExtractor={item => item.id.toString()}
         style={[
@@ -375,13 +377,10 @@ const KappaDetail: React.FC<KappaProps> = ({ kappa, onBack }) => {
             source={{ uri: `${BASE_FILE_URL}/${item.img}` }}
             text={item.name}
             style={styles.item}
-            onPress={() => {
-              setDetail(item);
-            }}
+            onPress={() => setDetail(item)}
           />
         )}
       />
-
       {detailPageKappa != null && (
         <DetailKappaInstant
           kappa={detailPageKappa}
@@ -396,7 +395,7 @@ const DetailKappaInstant: React.FC<KappaProps> = ({ kappa, onBack }) => {
   const [Dummy] = useState(1);
   const { profile } = useSelector((s: RootState) => s.hotel);
   const [detailKappa, setKappa] = useState<Kappa[]>([]);
-  const [choiceItem, setChoiceItem] = useState(0);
+  const [choiceItem, setChoiceItem] = useState<Kappa | null>(null);
   useEffect(() => {
     const backAction = () => {
       onBack();
@@ -436,6 +435,18 @@ const DetailKappaInstant: React.FC<KappaProps> = ({ kappa, onBack }) => {
     getHotelProfile();
   }, []);
 
+  function setChoice(id?: number) {
+    const result = detailKappa
+      .map(e => {
+        return e;
+      })
+      .filter(e => e.id === id);
+    console.log(result);
+
+    setChoiceItem(result[0]);
+    console.log(choiceItem);
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.cardMiddle}>
@@ -452,24 +463,25 @@ const DetailKappaInstant: React.FC<KappaProps> = ({ kappa, onBack }) => {
               key={item.id}
               preferredFocus={Dummy === item.id}
               text={item.name}
+              
               activeColor={profile?.primaryColor}
               source={{ uri: `${BASE_FILE_URL}/${item.img}` }}
-              onFocus={() => setChoiceItem(item.id - 2)}
+              onFocus={() => setChoice(item.id)}
               style={styles.item3}
             />
           )}
         />
       </View>
 
-      {detailKappa.length > 0 && (
+      {choiceItem && (
         <View style={styles.cardRight}>
           <Image
-            source={{ uri: `${BASE_FILE_URL}/${detailKappa[choiceItem].img}` }}
+            source={{ uri: `${BASE_FILE_URL}/${choiceItem.img}` }}
             resizeMode="cover"
             style={styles.image}
           />
-          <Text style={styles.title2}>{detailKappa[choiceItem].name}</Text>
-          <Text style={styles.desc}>{detailKappa[choiceItem].description}</Text>
+          <Text style={styles.title2}>{choiceItem.name}</Text>
+          <Text style={styles.desc}>{choiceItem.description}</Text>
         </View>
       )}
     </View>
@@ -507,11 +519,11 @@ const HotelProfile: React.FC<Props> = ({ profile }) => {
               text={item.title}
               style={styles.item}
               onPress={() => {
-                if (item.id === 1) {
+                if (item.id === 3) {
                   setDetail(item);
                 } else if (item.id === 2) {
                   setKappa(item);
-                } else if (item.id === 3) {
+                } else if (item.id === 1) {
                   setDetail(item);
                 } else if (item.id === 4) {
                   setGallery(item);
@@ -611,6 +623,7 @@ const styles = StyleSheet.create({
   },
   item3: {
     height: 150,
+    fontSize: 12,
   },
   item2: {
     flex: 0.33,

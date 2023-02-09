@@ -169,6 +169,16 @@ interface FoodCategory {
   updatedAt?: Date | string;
   deletedAt?: Date | string;
 }
+interface RestoCategory {
+  id: number;
+  hotelId: number;
+  name: string;
+  img: string | import('react-native').ImageSourcePropType;
+  contact: string;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  deletedAt?: Date | string;
+}
 
 interface listResortProfile {
   img: string;

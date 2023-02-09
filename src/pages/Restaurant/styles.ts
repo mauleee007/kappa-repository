@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import { normalize } from '../../utils/scaling';
 
 export const styles = StyleSheet.create({
   button: {
@@ -48,8 +49,19 @@ export const styles = StyleSheet.create({
     marginLeft: 'auto',
     borderRadius: 8,
   },
+  listColWrapper: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  item2: {
+    flex: 0.33,
+    margin: normalize(20),
+    height: 150,
+    marginVertical: 'auto',
+  },
   item: {
     height: 150,
+    width: 180
   },
   menu: {
     marginLeft: 6,

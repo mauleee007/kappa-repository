@@ -60,6 +60,7 @@ const styles = StyleSheet.create({
   text: {
     fontFamily: 'Outfit-Regular',
     color: '#fff',
+    fontSize: 15,
     padding: 10,
     width: '100%',
     textAlign: 'center',
