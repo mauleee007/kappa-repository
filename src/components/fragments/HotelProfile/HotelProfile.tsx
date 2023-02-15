@@ -214,7 +214,7 @@ const GalleryDetail: React.FC<GlProps> = ({ dataGallery, onBack }) => {
 
   useEffect(() => {
     const getGallery = async () => {
-      setLoading(true);
+      // setLoading(true);
       try {
         const resGallery = await ApiServices.getGallery();
         console.log(resGallery.data.data);
@@ -228,7 +228,7 @@ const GalleryDetail: React.FC<GlProps> = ({ dataGallery, onBack }) => {
         console.log(err);
         ToastAndroid.show('Cannot get galleries', ToastAndroid.SHORT);
       }
-      setLoading(false);
+      // setLoading(false);
     };
 
     getGallery();

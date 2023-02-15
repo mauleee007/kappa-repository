@@ -298,7 +298,7 @@ const HotelGuide: React.FC = () => {
             />
             <TextMenuItem
               activeColor={profile?.primaryColor}
-              title="Promo&Event"
+              title="Promo & Event"
               onFocus={() => setMenu(5)}
             />
 

@@ -158,11 +158,11 @@ const Restaurant: React.FC<RestaurantRouteProp> = () => {
             <FlatList
               data={categories}
               keyExtractor={item => item.id.toString()}
-              renderItem={({ item }) => (
+              renderItem={({ item,index }) => (
                 <TextMenuItem
                   key={item.id}
                   activeColor={profile?.primaryColor}
-                  preferredFocus={category === item.id}
+                  preferredFocus={index === 0}
                   active={category === item.id}
                   title={item.name}
                   onFocus={() => setCategory(item.id)}

@@ -56,7 +56,7 @@ export const styles = StyleSheet.create({
   item2: {
     flex: 0.33,
     margin: normalize(20),
-    height: 150,
+    height: 185,
     marginVertical: 'auto',
   },
   item: {

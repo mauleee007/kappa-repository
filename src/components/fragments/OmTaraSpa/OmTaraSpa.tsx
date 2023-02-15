@@ -440,7 +440,7 @@ const styles = StyleSheet.create({
     shadowRadius: 0.2,
   },
   image: {
-    height: 120,
+    height: 150,
     width: '70%',
     marginRight: 'auto',
     marginTop: 12,

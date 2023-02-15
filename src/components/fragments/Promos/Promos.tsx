@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
     color: '#000',
     fontFamily: 'Outfit-Light',
     textAlign: 'center',
-    marginTop: 32,
+    marginTop: 20,
   },
 });
 
