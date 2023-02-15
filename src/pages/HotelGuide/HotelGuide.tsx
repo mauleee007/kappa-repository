@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import Card from '../../components/elements/Card';
@@ -6,7 +6,6 @@ import TextMenuItem from '../../components/elements/TextMenuItem';
 import AroundUs from '../../components/fragments/AroundUs';
 import BaseLayout from '../../components/fragments/BaseLayout';
 import CCTVCard from '../../components/fragments/CCTVCard';
-import Events from '../../components/fragments/Events';
 import Facilities from '../../components/fragments/Facilities';
 import HotelProfile from '../../components/fragments/HotelProfile';
 import OmTaraSpaDetail from '../../components/fragments/OmTaraSpa/OmTaraSpa';
@@ -32,7 +31,6 @@ const HotelGuide: React.FC = () => {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(0);
   const [menu, setMenu] = useState(0);
-  // const [bg, setBg] = useState('file:///storage/emulated/0/tv/guide-bg.jpg');
 
   const dispatch = useDispatch<AppDispatch>();
   const { hotel, profile, cctvUrl } = useSelector((s: RootState) => s.hotel);
@@ -59,6 +57,7 @@ const HotelGuide: React.FC = () => {
         return 'file:///storage/emulated/0/tv/guide-bg.jpg';
     }
   }, [menu]);
+
   const renderContent = useCallback(() => {
     switch (menu) {
       case 0:
@@ -74,7 +73,7 @@ const HotelGuide: React.FC = () => {
         }
         break;
       case 3:
-        return <OmTaraSpaDetail omtaraspa={profile} />;
+        return <OmTaraSpaDetail />;
       case 4:
         if (foodCategories.length > 0) {
           return <Restaurant categories={foodCategories} />;
@@ -131,6 +130,26 @@ const HotelGuide: React.FC = () => {
     rooms,
   ]);
 
+  const timeoutRef = useRef<number | null>(null);
+
+  const changeMenu = (menu: number) => {
+    if (timeoutRef != null && typeof timeoutRef.current === 'number') {
+      clearTimeout(timeoutRef.current);
+    }
+
+    timeoutRef.current = setTimeout(() => {
+      setMenu(menu);
+    }, 1000);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef != null && typeof timeoutRef.current === 'number') {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
   useEffect(() => {
     let isMounted = true;
 
@@ -143,8 +162,6 @@ const HotelGuide: React.FC = () => {
       try {
         const resFoodCategory = await ApiServices.getRestaurant(hotel.id);
         if (resFoodCategory.status === 200) {
-          // console.log(resFoodCategory);
-
           if (isMounted) {
             setFoodCategories(resFoodCategory.data.data);
           }
@@ -177,7 +194,6 @@ const HotelGuide: React.FC = () => {
           dispatch(setToast({ message: 'Cannot get hotel policies' }));
         }
       } catch (err) {
-        console.log(err);
         dispatch(setToast({ message: 'Cannot get information' }));
       }
       setLoading(l => l - 1);
@@ -266,7 +282,7 @@ const HotelGuide: React.FC = () => {
               active={menu === 0}
               activeColor={profile?.primaryColor}
               title="Resort Profile"
-              onFocus={() => setMenu(0)}
+              onPress={() => setMenu(0)}
             />
 
             {rooms.map((room, i) => (
@@ -275,45 +291,45 @@ const HotelGuide: React.FC = () => {
                 active={menu === i + 100}
                 activeColor={profile?.primaryColor}
                 title={room.name}
-                onFocus={() => setMenu(i + 100)}
+                onPress={() => setMenu(i + 100)}
               />
             ))}
             <TextMenuItem
               active={menu === 2}
               activeColor={profile?.primaryColor}
               title="Facilities"
-              onFocus={() => setMenu(2)}
+              onPress={() => setMenu(2)}
             />
             <TextMenuItem
               active={menu === 3}
               activeColor={profile?.primaryColor}
               title="Om Tara Spa by Clarins"
-              onFocus={() => setMenu(3)}
+              onPress={() => setMenu(3)}
             />
             <TextMenuItem
               active={menu === 4}
               activeColor={profile?.primaryColor}
               title="Epicurean Nests"
-              onFocus={() => setMenu(4)}
+              onPress={() => setMenu(4)}
             />
             <TextMenuItem
               activeColor={profile?.primaryColor}
               title="Promo & Event"
-              onFocus={() => setMenu(5)}
+              onPress={() => setMenu(5)}
             />
 
             <TextMenuItem
               active={menu === 6}
               activeColor={profile?.primaryColor}
               title="Policy"
-              onFocus={() => setMenu(6)}
+              onPress={() => setMenu(6)}
             />
             {cctvUrl !== '' && (
               <TextMenuItem
                 active={menu === 7}
                 activeColor={profile?.primaryColor}
                 title="Traffic CCTV"
-                onFocus={() => setMenu(7)}
+                onPress={() => setMenu(7)}
               />
             )}
           </ScrollView>

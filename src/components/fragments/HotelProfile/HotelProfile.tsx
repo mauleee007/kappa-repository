@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { createRef, RefObject, useCallback, useEffect, useRef, useState } from 'react';
 import {
   BackHandler,
   Image,
@@ -8,6 +8,8 @@ import {
   FlatList,
   ImageSourcePropType,
   ToastAndroid,
+  findNodeHandle,
+  NativeModules,
 } from 'react-native';
 import { normalize } from '../../../utils/scaling';
 import Card from '../../elements/Card';
@@ -16,29 +18,9 @@ import img1 from '../../../assets/HotelProfile/AnEden.jpg';
 import img2 from '../../../assets/HotelProfile/YogaShala3-2.jpg';
 import img3 from '../../../assets/HotelProfile/Philosophy_.jpg';
 import img4 from '../../../assets/HotelProfile/Permaculture.jpg';
-import galery1 from '../../../assets/Gallery/Drone-KappaSensesUbud4.jpg';
-import galery2 from '../../../assets/Gallery/DroneRetreat.jpg';
-import galery3 from '../../../assets/Gallery/Kelapa.jpg';
-import galery4 from '../../../assets/Gallery/KokokanDrone.jpg';
-import galery5 from '../../../assets/Gallery/OmTaraSpa.jpg';
-import galery6 from '../../../assets/Gallery/OneBedroomPoolVilla-swimmingpool_.jpg';
-import galery7 from '../../../assets/Gallery/OneBedroomPoolVillawithRiceFieldView.jpg';
-import galery8 from '../../../assets/Gallery/Permaculture.jpg';
-import kappa1 from '../../../assets/HotelProfile/KappaInstant/BeyondKappaSensesUbud/TuakBali.jpg';
-import kappa2 from '../../../assets/HotelProfile/KappaInstant/LittleVoyagerKappaSensesUbud/AnimalFeeding.jpg';
-import kappa3 from '../../../assets/HotelProfile/KappaInstant/WithinKappaSenses/UmahTanggayuda.jpg';
 
-import beyond1 from '../../../assets/HotelProfile/KappaInstant/BeyondKappaSensesUbud/CoffeeRoasting.jpg';
-import beyond2 from '../../../assets/HotelProfile/KappaInstant/BeyondKappaSensesUbud/LearnHowToMakeBalineseOfferings.jpg';
-import beyond3 from '../../../assets/HotelProfile/KappaInstant/BeyondKappaSensesUbud/TraditionalHerbalDrinkLoloh.jpg';
-import beyond4 from '../../../assets/HotelProfile/KappaInstant/BeyondKappaSensesUbud/TuakBali.jpg';
-import beyond5 from '../../../assets/HotelProfile/KappaInstant/BeyondKappaSensesUbud/YogaShala3.jpg';
-
-import { NavigationContainer, useFocusEffect } from '@react-navigation/native';
-import hotel, { setProfile } from '../../../stores/hotel';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../stores';
-import id from 'date-fns/esm/locale/id/index.js';
 import ApiServices from '../../../services/apis';
 import { BASE_FILE_URL } from '../../../services/utils';
 
@@ -68,78 +50,6 @@ const Data: HotelProfileDetail[] = [
     img: img4,
     title: 'Gallery',
     description: ' ',
-  },
-];
-
-const dataGalery: Galery[] = [
-  {
-    id: 1,
-    img: galery1,
-  },
-  {
-    id: 2,
-    img: galery2,
-  },
-  {
-    id: 3,
-    img: galery3,
-  },
-  {
-    id: 4,
-    img: galery4,
-  },
-  {
-    id: 5,
-    img: galery5,
-  },
-];
-
-const dataKappa: KappaInstants[] = [
-  {
-    id: 1,
-    title: 'Beyond Kappa Senses Ubud',
-    img: kappa1,
-    detail: [
-      {
-        id: 1,
-        title: 'Coffe Roasting',
-        description:
-          'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore',
-        img: beyond1,
-      },
-      {
-        id: 2,
-        title: 'Learn How to Make Balinese Offerings',
-        img: beyond2,
-      },
-      {
-        id: 3,
-        title: 'Traditional Herbal Drink Loloh',
-        img: beyond3,
-      },
-      {
-        id: 4,
-        title: 'Tuak Bali',
-        img: beyond4,
-      },
-      {
-        id: 5,
-        title: 'Yoga Shala 3',
-        img: beyond5,
-      },
-    ],
-  },
-  {
-    id: 2,
-    title: 'Little Voyager Kappa Senses Ubud',
-    img: kappa2,
-    detail: [],
-  },
-  {
-    id: 3,
-    title: 'Within Kappa Senses Ubud',
-    img: kappa3,
-    detail: [],
   },
 ];
 
@@ -217,15 +127,12 @@ const GalleryDetail: React.FC<GlProps> = ({ dataGallery, onBack }) => {
       // setLoading(true);
       try {
         const resGallery = await ApiServices.getGallery();
-        console.log(resGallery.data.data);
         if (resGallery.status === 200) {
           setGallery(resGallery.data.data);
         } else {
-          console.log(resGallery);
           ToastAndroid.show('Cannot get galleries', ToastAndroid.SHORT);
         }
       } catch (err) {
-        console.log(err);
         ToastAndroid.show('Cannot get galleries', ToastAndroid.SHORT);
       }
       // setLoading(false);
@@ -235,7 +142,7 @@ const GalleryDetail: React.FC<GlProps> = ({ dataGallery, onBack }) => {
   }, []);
 
   return (
-    <>
+    <View style={{ paddingTop: 20, paddingBottom: 20, paddingLeft: 10, paddingRight: 10 }}>
       <FlatList
         data={detailGallery}
         numColumns={3}
@@ -248,13 +155,10 @@ const GalleryDetail: React.FC<GlProps> = ({ dataGallery, onBack }) => {
             key={item.id}
             source={{ uri: `${BASE_FILE_URL}/${item.img}` }}
             style={styles.item2}
-            // onPress={() =>
-            //   navigation.navigate('Restaurant', { category: item.id })
-            // }
           />
         )}
       />
-    </>
+    </View>
   );
 };
 
@@ -279,22 +183,19 @@ const DescHotel: React.FC<HotelProps> = ({ detail, onBack }) => {
       // setLoading(true);
       try {
         const resHotelProfile = await ApiServices.getHotelProfile(detail.id);
-        console.log(resHotelProfile.data.data);
         if (resHotelProfile.status === 200) {
           setHotelprofile(resHotelProfile.data.data);
         } else {
-          console.log(resHotelProfile);
           ToastAndroid.show('Cannot get galleries', ToastAndroid.SHORT);
         }
       } catch (err) {
-        console.log(err);
         ToastAndroid.show('Cannot get galleries', ToastAndroid.SHORT);
       }
       // setLoading(false);
     };
 
     getHotelProfile();
-  }, [onBack]);
+  }, [detail.id, onBack]);
 
   return (
     <View style={styles.profileRoot}>
@@ -318,8 +219,28 @@ const DescHotel: React.FC<HotelProps> = ({ detail, onBack }) => {
 //page kappa instants
 const KappaDetail: React.FC<KappaProps> = ({ kappa, onBack }) => {
   const [detailPageKappa, setDetail] = useState<KappaInstants | null>(null);
+  const [itemIdx, setItemIdx] = useState(0);
   const [detailKappa, setKappa] = useState<Kappa[]>([]);
   const { profile } = useSelector((s: RootState) => s.hotel);
+
+  const itemRefs = useRef<RefObject<View>[]>([]);
+
+  if (itemRefs.current.length !== detailKappa.length) {
+    // add or remove refs
+    itemRefs.current = Array(detailKappa.length)
+      .fill(null)
+      .map((_, i) => itemRefs.current[i] || createRef());
+  }
+
+  const setFocus = useCallback((ref: RefObject<View>) => {
+    if (ref == null || ref.current == null) {
+      return;
+    }
+
+    const tag = findNodeHandle(ref.current);
+    NativeModules.UIManager.updateView(tag, 'RCTView', { hasTVPreferredFocus: true });
+  }, []);
+
   useEffect(() => {
     const backAction = () => {
       onBack();
@@ -338,22 +259,19 @@ const KappaDetail: React.FC<KappaProps> = ({ kappa, onBack }) => {
       // setLoading(true);
       try {
         const resHotelProfile = await ApiServices.getHotelProfile(kappa.id);
-        console.log(resHotelProfile.data.data);
         if (resHotelProfile.status === 200) {
           setKappa(resHotelProfile.data.data);
         } else {
-          console.log(resHotelProfile);
           ToastAndroid.show('Cannot get galleries', ToastAndroid.SHORT);
         }
       } catch (err) {
-        console.log(err);
         ToastAndroid.show('Cannot get galleries', ToastAndroid.SHORT);
       }
       // setLoading(false);
     };
 
     getHotelProfile();
-  }, [onBack]);
+  }, []);
 
   return (
     <>
@@ -369,22 +287,29 @@ const KappaDetail: React.FC<KappaProps> = ({ kappa, onBack }) => {
             display: detailPageKappa == null ? 'flex' : 'none',
           },
         ]}
-        renderItem={({ item }) => (
+        renderItem={({ item, index }) => (
           <ImageItem
+            ref={itemRefs.current[index]}
             activeColor={profile?.primaryColor}
             preferredFocus={item.id === 1}
             key={item.id}
             source={{ uri: `${BASE_FILE_URL}/${item.img}` }}
             text={item.name}
             style={styles.item}
-            onPress={() => setDetail(item)}
+            onPress={() => {
+              setItemIdx(index);
+              setDetail(item);
+            }}
           />
         )}
       />
       {detailPageKappa != null && (
         <DetailKappaInstant
           kappa={detailPageKappa}
-          onBack={() => setDetail(null)}
+          onBack={() => {
+            setDetail(null);
+            setTimeout(() => setFocus(itemRefs.current[itemIdx]));
+          }}
         />
       )}
     </>
@@ -392,10 +317,12 @@ const KappaDetail: React.FC<KappaProps> = ({ kappa, onBack }) => {
 };
 
 const DetailKappaInstant: React.FC<KappaProps> = ({ kappa, onBack }) => {
-  const [Dummy] = useState(1);
-  const { profile } = useSelector((s: RootState) => s.hotel);
   const [detailKappa, setKappa] = useState<Kappa[]>([]);
-  const [choiceItem, setChoiceItem] = useState<Kappa | null>(null);
+  const [choiceItem, setChoiceItem] = useState(-1);
+  const [loading, setLoading] = useState(true);
+
+  const { profile } = useSelector((s: RootState) => s.hotel);
+
   useEffect(() => {
     const backAction = () => {
       onBack();
@@ -411,78 +338,66 @@ const DetailKappaInstant: React.FC<KappaProps> = ({ kappa, onBack }) => {
 
   useEffect(() => {
     const getHotelProfile = async () => {
-      // setLoading(true);
+      setLoading(true);
       try {
         const resHotelProfile = await ApiServices.getHotelProfile(
           100,
           kappa.id,
         );
-        console.log(resHotelProfile.data.data);
 
         if (resHotelProfile.status === 200) {
           setKappa(resHotelProfile.data.data);
         } else {
-          console.log(resHotelProfile);
           ToastAndroid.show('Cannot get galleries', ToastAndroid.SHORT);
         }
       } catch (err) {
-        console.log(err);
         ToastAndroid.show('Cannot get galleries', ToastAndroid.SHORT);
       }
-      // setLoading(false);
+      setLoading(false);
     };
 
     getHotelProfile();
-  }, []);
-
-  function setChoice(id?: number) {
-    const result = detailKappa
-      .map(e => {
-        return e;
-      })
-      .filter(e => e.id === id);
-    console.log(result);
-
-    setChoiceItem(result[0]);
-    console.log(choiceItem);
-  }
+  }, [kappa.id]);
 
   return (
     <View style={styles.container}>
       <View style={styles.cardMiddle}>
-        <FlatList
-          removeClippedSubviews={false}
-          focusable
-          hasTVPreferredFocus
-          numColumns={2}
-          style={styles.menuList}
-          keyExtractor={item => item.id.toString()}
-          data={detailKappa}
-          renderItem={({ item }) => (
-            <ImageItem
-              key={item.id}
-              preferredFocus={item.id === 1}
-              text={item.name}
-              activeColor={profile?.primaryColor}
-              source={{ uri: `${BASE_FILE_URL}/${item.img}` }}
-              onFocus={() => setChoice(item.id)}
-              style={styles.item3}
-            />
-          )}
-        />
+        {!loading && (
+          <FlatList
+            focusable
+            hasTVPreferredFocus
+            numColumns={2}
+            style={styles.menuList}
+            keyExtractor={item => item.id.toString()}
+            data={detailKappa}
+            renderItem={({ item, index }) => (
+              <ImageItem
+                preferredFocus={index === 0}
+                key={item.id}
+                text={item.name}
+                activeColor={profile?.primaryColor}
+                source={{ uri: `${BASE_FILE_URL}/${item.img}` }}
+                onFocus={() => setChoiceItem(index)}
+                style={styles.item3}
+              />
+            )}
+          />
+        )}
       </View>
 
-      {choiceItem && (
-        <View style={styles.cardRight}>
-          <Image
-            source={{ uri: `${BASE_FILE_URL}/${choiceItem.img}` }}
-            resizeMode="cover"
-            style={styles.image}
-          />
-          <Text style={styles.title2}>{choiceItem.name}</Text>
-          <Text style={styles.desc}>{choiceItem.description}</Text>
-        </View>
-      )}
+      <View style={styles.cardRight}>
+        {choiceItem >= 0 && (
+          <>
+            <Image
+              source={{ uri: `${BASE_FILE_URL}/${detailKappa[choiceItem].img}` }}
+              resizeMode="cover"
+              style={styles.image}
+            />
+            <Text style={styles.title2}>{detailKappa[choiceItem].name}</Text>
+            <Text style={styles.desc}>{detailKappa[choiceItem].description}</Text>
+          </>
+        )}
+      </View>
     </View>
   );
 };
@@ -491,8 +406,22 @@ const HotelProfile: React.FC<Props> = ({ profile }) => {
   const [detail, setDetail] = useState<HotelProfileDetail | null>(null);
   const [detailGallery, setGallery] = useState<ListGallery[] | null>(null);
   const [detailKappa, setKappa] = useState<KappaInstants | null>(null);
+  const [id, setId] = useState(0);
 
-  // const { profile } = useSelector((s: RootState) => s.hotel);
+  const profileRef = useRef<View>(null);
+  const galleryRef = useRef<View>(null);
+  const philosophyRef = useRef<View>(null);
+  const instantRef = useRef<View>(null);
+
+  const setFocus = useCallback((ref: RefObject<View>) => {
+    if (ref == null || ref.current == null) {
+      return;
+    }
+
+    const tag = findNodeHandle(ref.current);
+    NativeModules.UIManager.updateView(tag, 'RCTView', { hasTVPreferredFocus: true });
+  }, []);
+  
   return (
     <>
       <Card style={styles.card}>
@@ -512,6 +441,15 @@ const HotelProfile: React.FC<Props> = ({ profile }) => {
           ]}
           renderItem={({ item }) => (
             <ImageItem
+              ref={(() => {
+                switch (item.id) {
+                  case 1: return profileRef;
+                  case 2: return instantRef;
+                  case 3: return philosophyRef;
+                  case 4: return galleryRef;
+                  default: return undefined;
+                }
+              })()}
               activeColor={profile?.primaryColor}
               key={item.id}
               source={item.img as ImageSourcePropType}
@@ -519,10 +457,12 @@ const HotelProfile: React.FC<Props> = ({ profile }) => {
               style={styles.item}
               onPress={() => {
                 if (item.id === 3) {
+                  setId(3);
                   setDetail(item);
                 } else if (item.id === 2) {
                   setKappa(item);
                 } else if (item.id === 1) {
+                  setId(1);
                   setDetail(item);
                 } else if (item.id === 4) {
                   setGallery(item);
@@ -533,16 +473,35 @@ const HotelProfile: React.FC<Props> = ({ profile }) => {
         />
 
         {detail != null && (
-          <DescHotel detail={detail} onBack={() => setDetail(null)} />
+          <DescHotel
+            detail={detail}
+            onBack={() => {
+              setDetail(null);
+              if (id === 1) {
+                setTimeout(() => setFocus(profileRef));
+              } else if (id === 3) {
+                setTimeout(() => setFocus(philosophyRef));
+              }
+            }}
+          />
         )}
         {detailGallery != null && (
           <GalleryDetail
             dataGallery={detailGallery}
-            onBack={() => setGallery(null)}
+            onBack={() => {
+              setGallery(null);
+              setTimeout(() => setFocus(galleryRef));
+            }}
           />
         )}
         {detailKappa != null && (
-          <KappaDetail kappa={detailKappa} onBack={() => setKappa(null)} />
+          <KappaDetail
+            kappa={detailKappa}
+            onBack={() => {
+              setKappa(null);
+              setTimeout(() => setFocus(instantRef));
+            }}
+          />
         )}
       </Card>
     </>

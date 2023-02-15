@@ -8,7 +8,6 @@ export function getHotels(): AppThunk {
     dispatch(setLoading(true));
     try {
       const resInfo = await HotelService.getHotelInfo();
-      // console.log(resInfo);
       if (resInfo.status === 200) {
         dispatch(setHotel(resInfo.data.data));
       } else {
@@ -16,7 +15,6 @@ export function getHotels(): AppThunk {
       }
 
       const resProfile = await HotelService.getHotelProfile();
-      // console.log(resProfile);
       if (resProfile.status === 200) {
         dispatch(setProfile(resProfile.data.data));
       } else {
@@ -24,7 +22,6 @@ export function getHotels(): AppThunk {
       }
 
       const resTV = await HotelService.getTvUrl();
-      // console.log(resTV);
       if (resTV.status === 200) {
         if (
           resTV.data.data != null &&

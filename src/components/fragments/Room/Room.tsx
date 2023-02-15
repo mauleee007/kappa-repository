@@ -1,19 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   BackHandler,
   FlatList,
   Image,
   StyleSheet,
   Text,
+  findNodeHandle,
+  NativeModules,
   View,
+  Animated,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import img4 from '../../../assets/DanuJungle/DeluxePoolVilla.jpg';
-import img5 from '../../../assets/DanuJungle/DeluxeSuitewithPrivateHotTub.jpg';
-import img6 from '../../../assets/DanuJungle/JungleSuite.jpg';
 import img1 from '../../../assets/DanuRetreat/OneBedroomPoolVilla.jpg';
-import img2 from '../../../assets/DanuRetreat/OneBedroomPoolVillawithView.jpg';
-import img3 from '../../../assets/DanuRetreat/TwoBedroomPoolVilla.jpg';
 import ApiServices from '../../../services/apis';
 import { BASE_FILE_URL } from '../../../services/utils';
 import { AppDispatch, RootState } from '../../../stores';
@@ -28,9 +26,9 @@ type Props = {
 type DanuProps = {
   room: Room;
   dataRoom: ListImg[];
-  detail: DanuDetail;
   onBack: () => void;
 };
+
 interface ListImg {
   id: number;
   roomId: number;
@@ -42,54 +40,6 @@ interface ListImg {
   deletedAt?: Date | string;
 }
 
-const DataDanu: DanuDetail[] = [
-  {
-    id: 1,
-    img: img1,
-    title: 'One Bedroom Pool Villa',
-    description:
-      'One Bedroom Pool Villas are private sanctuaries set within the divine Danu Retreat. Surrounded by tropical foliage, these conscientiously designed one-bedroom villas offer ample space to relax and unwind. Spend endless days relaxing in the villa spacious bedroom and recharge waterside by the private infinity swimming pool.',
-  },
-  {
-    id: 2,
-    img: img2,
-    title: 'One Bedroom Pool Villa with View',
-    description:
-      'These 12 units villas benefit exclusive up close and personal, a very intimate view towards the indigenous rice field of Ubuds rural and revered environment. All villas are conscientiously designed for ultimate comfort and offer premium scenery.',
-  },
-  {
-    id: 3,
-    img: img3,
-    title: 'Two Bedroom Pool Villa',
-    description:
-      'These extensive elegant villas capture premium Ubuds charming signature rice field view. Both bedrooms are spacious allowing comfort and ultimate privacy. Generous bathrooms with lush vegetation offer separate showers and bathtubs. The resplendent rice paddies swaying in the breeze as you unwind by the striking private infinity swimming pool.',
-  },
-];
-
-const DataJungle: DanuDetail[] = [
-  {
-    id: 1,
-    img: img4,
-    title: 'Deluxe Pool Villa',
-    description:
-      'Most significance feature in the Danu Jungle, the only one-unit Deluxe Pool Villa boasts large private infinity swimming pool jutting out to the lush vegetation and emerald rice paddy view. Spacious bathroom features a bath tub, double vanity units conveniently spaced within the extensive bathroom area. Take delight in the gentle sound of tropical birds and Ubud’s soothing natural melody while relaxing in your private veranda.',
-  },
-  {
-    id: 2,
-    img: img5,
-    title: 'Deluxe Suite Private Hot Tub',
-    description:
-      'Aesthetically designed to offer ultimate indulgence and relaxation with the 1,8 X 1,5m sized private Jacuzzi available on the veranda. All suites are facilitated with spacious bathroom with bathtub and double vanity, a private veranda, large bedroom, private Jacuzzi, a spacious living area and fascinating views of Ubud’s jungle or jungle river pools.',
-  },
-  {
-    id: 3,
-    img: img6,
-    title: 'Jungle Suite',
-    description:
-      'Impeccably nestled in Danu Jungle, the 11 units of Jungle Suites occupy the lower part of duplex styled accommodation and facilitated with intimate bathroom, double vanity, a private veranda, large bedroom with alluring views to the jungle or jungle river pools.',
-  },
-];
-
 const ListImageEx: ListImg = {
   id: 1,
   roomId: 45,
@@ -99,13 +49,9 @@ const ListImageEx: ListImg = {
     'One Bedroom Pool Villas are private sanctuaries set within the divine Danu Retreat. Surrounded by tropical foliage, these conscientiously designed one-bedroom villas offer ample space to relax and unwind. Spend endless days relaxing in the villa spacious bedroom and recharge waterside by the private infinity swimming pool.',
 };
 
-const DescDanu: React.FC<DanuProps> = ({ room, dataRoom, onBack }) => {
-  const [listImg, setListImg] = useState<ListImg[]>([]);
-  const { hotel, profile, cctvUrl } = useSelector((s: RootState) => s.hotel);
-  const [selectedMenuIdx, setSelectedMenuIdx] = useState(0);
+const DescDanu: React.FC<DanuProps> = ({ dataRoom, onBack }) => {
+  const { profile } = useSelector((s: RootState) => s.hotel);
   const [ListImage, setListImage] = useState<ListImg | null>(ListImageEx);
-
-  const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
     const backAction = () => {
@@ -122,7 +68,7 @@ const DescDanu: React.FC<DanuProps> = ({ room, dataRoom, onBack }) => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.cardMiddle}>
+      <View style={{ ...styles.cardMiddle }}>
         <FlatList
           removeClippedSubviews={false}
           focusable
@@ -133,8 +79,8 @@ const DescDanu: React.FC<DanuProps> = ({ room, dataRoom, onBack }) => {
           data={dataRoom}
           renderItem={({ item, index }) => (
             <ImageItem
-              key={item.id}
               preferredFocus={index === 0}
+              key={item.id}
               activeColor={profile?.primaryColor}
               source={{ uri: `${BASE_FILE_URL}/${item.img}` }}
               // text={item.text}
@@ -162,13 +108,22 @@ const DescDanu: React.FC<DanuProps> = ({ room, dataRoom, onBack }) => {
 
 const Room: React.FC<Props> = ({ room }) => {
   const [detail, setDetail] = useState<DanuDetail | null>(null);
+  const [hideList, setHideList] = useState(false);
   const { profile } = useSelector((s: RootState) => s.hotel);
-  const { image, setImage } = useState(0);
   const [listImg, setListImg] = useState<ListImg[]>([]);
-  const { hotel, cctvUrl } = useSelector((s: RootState) => s.hotel);
-  const [ListImage, setListImage] = useState<ListImg | null>(ListImageEx);
+  const { hotel } = useSelector((s: RootState) => s.hotel);
 
   const dispatch = useDispatch<AppDispatch>();
+  const mainRef = useRef<View>(null);
+
+  const setFocus = useCallback(() => {
+    if (mainRef.current == null) {
+      return;
+    }
+
+    const tag = findNodeHandle(mainRef.current);
+    NativeModules.UIManager.updateView(tag, 'RCTView', { hasTVPreferredFocus: true });
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -192,13 +147,12 @@ const Room: React.FC<Props> = ({ room }) => {
           return;
         }
       } catch (err) {
-        console.log(err);
         dispatch(setToast({ message: 'Cannot get information' }));
       }
     };
 
     getListImg();
-  }, [dispatch]);
+  }, [dispatch, hotel, room.id]);
 
   return (
     <Card style={styles.card}>
@@ -206,25 +160,37 @@ const Room: React.FC<Props> = ({ room }) => {
         horizontal
         data={listImg}
         keyExtractor={item => item.id.toString()}
-        style={[styles.list, { display: detail == null ? 'flex' : 'none' }]}
-        renderItem={({ item }) => (
+        style={{...styles.list, display: !hideList ? 'flex' : 'none' }}
+        renderItem={({ item, index }) => (
           <ImageItem
+            ref={index === 0 ? mainRef : undefined}
             activeColor={profile?.primaryColor}
             source={{ uri: `${BASE_FILE_URL}/${item.img}` }}
             text={item.name}
             style={styles.item}
-            onPress={() => setDetail(item)}
+            onPress={() => {
+              setHideList(true);
+              setDetail(item);
+            }}
           />
         )}
       />
-      {detail != null && (
-        <DescDanu
-          detail={detail}
-          dataRoom={listImg}
-          room={room}
-          onBack={() => setDetail(null)}
-        />
-      )}
+
+      <View style={{ display: hideList? 'flex' : 'none', height: '100%' }}>
+        {detail && (
+          <DescDanu
+            dataRoom={listImg}
+            room={room}
+            onBack={() => {
+              setHideList(false);
+              setFocus();
+              setTimeout(() => {
+                setDetail(null);
+              });
+            }}
+          />
+        )}
+      </View>
     </Card>
   );
 };

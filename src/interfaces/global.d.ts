@@ -1,3 +1,5 @@
+declare module '*.jpg';
+
 interface App {
   packageName: string;
   appName: string;

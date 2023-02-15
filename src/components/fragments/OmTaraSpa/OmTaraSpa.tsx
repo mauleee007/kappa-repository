@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { createRef, RefObject, useCallback, useEffect, useRef, useState } from 'react';
 import {
   BackHandler,
   StyleSheet,
@@ -8,6 +8,8 @@ import {
   ImageSourcePropType,
   ToastAndroid,
   Image,
+  findNodeHandle,
+  NativeModules,
 } from 'react-native';
 import { useSelector } from 'react-redux';
 import ApiServices from '../../../services/apis';
@@ -15,7 +17,6 @@ import { BASE_FILE_URL } from '../../../services/utils';
 import { RootState } from '../../../stores';
 import { normalize } from '../../../utils/scaling';
 import Card from '../../elements/Card';
-// import { styles } from '../Footer/styles';
 import ImageItem from '../RoomTypes/ImageItem';
 import img1 from '../../../assets/OmTaraSPa/spabyclarins.jpg';
 import img2 from '../../../assets/OmTaraSPa/treatment.jpg';
@@ -31,20 +32,7 @@ interface OmTaraSpa {
   img?: any;
   detail: details[];
 }
-interface WellnessFacilities {
-  id: number;
-  hotelId?: number;
-  name?: string;
-  description?: string;
-  img: string | import('react-native').ImageSourcePropType;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  deletedAt?: Date | string;
-}
 
-type Props = {
-  omtaraspa: OmTaraSpa;
-};
 const Data: OmtaraSpaDetail[] = [
   {
     id: 1,
@@ -96,15 +84,12 @@ const DescOmtara: React.FC<OmtaraProps> = ({ detail, onBack }) => {
       // setLoading(true);
       try {
         const resOmtaraDetail = await ApiServices.getSpa(detail.id);
-        console.log(resOmtaraDetail.data.data);
         if (resOmtaraDetail.status === 200) {
           setOmtaraProfile(resOmtaraDetail.data.data);
         } else {
-          console.log(resOmtaraDetail);
           ToastAndroid.show('Cannot get OmtaraDetail', ToastAndroid.SHORT);
         }
       } catch (err) {
-        console.log(err);
         ToastAndroid.show('Cannot get OmtaraDetail', ToastAndroid.SHORT);
       }
       // setLoading(false);
@@ -179,15 +164,12 @@ const FacilitiesDetail: React.FC<FacilitiesProps> = ({
       setLoading(true);
       try {
         const resFacilities = await ApiServices.getSpaFacilities();
-        console.log(resFacilities.data.data);
         if (resFacilities.status === 200) {
           setDetail(resFacilities.data.data);
         } else {
-          console.log(resFacilities);
           ToastAndroid.show('Cannot get facilities', ToastAndroid.SHORT);
         }
       } catch (err) {
-        console.log(err);
         ToastAndroid.show('Cannot get facilities', ToastAndroid.SHORT);
       }
       setLoading(false);
@@ -201,6 +183,7 @@ const FacilitiesDetail: React.FC<FacilitiesProps> = ({
         data={detail}
         numColumns={3}
         columnWrapperStyle={styles.listColWrapper}
+        style={{ paddingTop: 10, paddingBottom: 10 }}
         keyExtractor={item => item.id.toString()}
         renderItem={({ item, index }) => (
           <ImageItem
@@ -220,20 +203,11 @@ const FacilitiesDetail: React.FC<FacilitiesProps> = ({
   );
 };
 
-interface ListTreatment {
-  id: number;
-  roomId: number;
-  img: string;
-  name: string;
-  description?: string;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  deletedAt?: Date | string;
-}
 type TreatmentProps = {
   detail: TreatmentMenu[];
   onBack: () => void;
 };
+
 interface Treatment {
   id: number;
   hotelId?: number;
@@ -266,15 +240,12 @@ const DetailTreatment: React.FC<TreatmentProps> = ({ detail, onBack }) => {
     const getTreatmentDetail = async () => {
       try {
         const resTreatmentDetail = await ApiServices.getWellnessTreatment();
-        console.log(resTreatmentDetail.data.data);
         if (resTreatmentDetail.status === 200) {
           setTreatment(resTreatmentDetail.data.data);
         } else {
-          console.log(resTreatmentDetail);
           ToastAndroid.show('Cannot get Treatment', ToastAndroid.SHORT);
         }
       } catch (error) {
-        console.log(error);
         ToastAndroid.show('Cannot get Treatment', ToastAndroid.SHORT);
       }
     };
@@ -287,9 +258,8 @@ const DetailTreatment: React.FC<TreatmentProps> = ({ detail, onBack }) => {
         return e;
       })
       .filter(e => e.id === id);
-    console.log(result);
+
     setChoiseItem(result[0]);
-    console.log(choiseItem);
   }
 
   return (
@@ -332,86 +302,87 @@ const DetailTreatment: React.FC<TreatmentProps> = ({ detail, onBack }) => {
   );
 };
 
-const OmTaraSpaDetail: React.FC<Props> = ({ omtaraspa }) => {
+const OmTaraSpaDetail: React.FC = () => {
   const [detailOmTaraSpa, setDetail] = useState<OmtaraSpaDetail | null>(null);
   const [detailFacilities, setFacilities] = useState<ListFacilities[] | null>(
     null,
   );
+  const [idx, setIdx] = useState(0);
+
+  const itemRefs = useRef<RefObject<View>[] | null[]>(Array(4).fill(createRef()));
+
   const [detailMenu, setMenu] = useState<TreatmentMenu[] | null>(null);
   const { profile } = useSelector((s: RootState) => s.hotel);
 
-  // useEffect(() => {
-  //   const getOmTaraSpa = async () => {
-  //     // setLoading(true);
-  //     try {
-  //       const resOmTaraSpa = await ApiServices.getKappa();
-  //       console.log(resOmTaraSpa.data.data);
-  //       if (resOmTaraSpa.status === 200) {
-  //         setOmTara(resOmTaraSpa.data.data);
-  //       } else {
-  //         console.log(resOmTaraSpa);
-  //         ToastAndroid.show('Cannot get galleries', ToastAndroid.SHORT);
-  //       }
-  //     } catch (err) {
-  //       console.log(err);
-  //       ToastAndroid.show('Cannot get galleries', ToastAndroid.SHORT);
-  //     }
-  //     // setLoading(false);
-  //   };
+  const setFocus = () => {
+    const ref = itemRefs.current[idx];
+    if (ref == null || ref.current == null) {
+      return;
+    }
 
-  //   getOmTaraSpa();
-  // }, []);
+    const tag = findNodeHandle(ref.current);
+    NativeModules.UIManager.updateView(tag, 'RCTView', { hasTVPreferredFocus: true });
+  };
 
   return (
     <>
       <Card style={styles.card}>
-        <FlatList
-          horizontal
-          data={Data}
-          keyExtractor={item => item.id.toString()}
-          style={[
-            styles.list,
-            {
-              display:
-                detailOmTaraSpa == null &&
-                detailFacilities == null &&
-                detailMenu == null
-                  ? 'flex'
-                  : 'none',
-            },
-          ]}
-          renderItem={({ item }) => (
-            <ImageItem
-              activeColor={profile?.primaryColor}
-              key={item.id}
-              source={item.img as ImageSourcePropType}
-              text={item.title}
-              style={styles.item}
-              onPress={() => {
-                if (item.id === 1) {
-                  setDetail(item);
-                } else if (item.id === 4) {
-                  setDetail(item);
-                } else if (item.id === 3) {
-                  setFacilities(item);
-                } else if (item.id === 2) {
-                  setMenu(item);
-                }
-              }}
-            />
-          )}
-        />
-        {detailOmTaraSpa != null && (
-          <DescOmtara detail={detailOmTaraSpa} onBack={() => setDetail(null)} />
+        {detailOmTaraSpa == null && detailFacilities == null && detailMenu == null && (
+          <FlatList
+            horizontal
+            data={Data}
+            keyExtractor={item => item.id.toString()}
+            style={styles.list}
+            renderItem={({ item, index }) => (
+              <ImageItem
+                preferredFocus={index === idx}
+                activeColor={profile?.primaryColor}
+                key={item.id}
+                source={item.img as ImageSourcePropType}
+                text={item.title}
+                style={styles.item}
+                onPress={() => {
+                  setIdx(index);
+                  if (item.id === 1) {
+                    setDetail(item);
+                  } else if (item.id === 4) {
+                    setDetail(item);
+                  } else if (item.id === 3) {
+                    setFacilities(item);
+                  } else if (item.id === 2) {
+                    setMenu(item);
+                  }
+                }}
+              />
+            )}
+          />
         )}
+
+        {detailOmTaraSpa != null && (
+          <DescOmtara
+            detail={detailOmTaraSpa}
+            onBack={() => {
+              setDetail(null);
+            }}
+          />
+        )}
+
         {detailFacilities != null && (
           <FacilitiesDetail
             dataFacilities={detailFacilities}
-            onBack={() => setFacilities(null)}
+            onBack={() => {
+              setFacilities(null);
+            }}
           />
         )}
+
         {detailMenu != null && (
-          <DetailTreatment detail={detailMenu} onBack={() => setMenu(null)} />
+          <DetailTreatment
+            detail={detailMenu}
+            onBack={() => {
+              setMenu(null);
+            }}
+          />
         )}
       </Card>
     </>
@@ -421,8 +392,8 @@ const OmTaraSpaDetail: React.FC<Props> = ({ omtaraspa }) => {
 const styles = StyleSheet.create({
   card: {
     flex: 1,
-    marginLeft: 3,
-    marginRight: 3,
+    marginLeft: 4,
+    marginRight: 4,
     overflow: 'hidden',
   },
   menuList: {

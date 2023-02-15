@@ -6,6 +6,7 @@ import {
   Pressable,
   StyleProp,
   StyleSheet,
+  View,
   ViewStyle,
 } from 'react-native';
 import { normalize } from '../../../utils/scaling';
@@ -20,7 +21,7 @@ interface Props {
   onPress?: () => void;
 }
 
-const ImageButton: React.FC<Props> = ({
+const ImageButton = React.forwardRef<View, Props>(({
   color,
   preferredFocus,
   resizeMode,
@@ -28,7 +29,7 @@ const ImageButton: React.FC<Props> = ({
   style,
   onFocus,
   onPress,
-}) => {
+}, ref) => {
   const [focus, setFocus] = useState(false);
 
   const handlePress = useCallback(() => {
@@ -48,6 +49,7 @@ const ImageButton: React.FC<Props> = ({
 
   return (
     <Pressable
+      ref={ref}
       hasTVPreferredFocus={preferredFocus}
       onPress={handlePress}
       onFocus={handleFocus}
@@ -64,7 +66,7 @@ const ImageButton: React.FC<Props> = ({
       />
     </Pressable>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {

@@ -3,7 +3,6 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   FlatList,
   Image,
-  ImageSourcePropType,
   Modal,
   Text,
   TextInput,
@@ -18,21 +17,13 @@ import RoundedButton from '../../components/elements/RoundedButton';
 import TextMenuItem from '../../components/elements/TextMenuItem';
 import BaseLayout from '../../components/fragments/BaseLayout';
 import ImageItem from '../../components/fragments/RoomTypes/ImageItem';
-import HotelService from '../../services/hotels';
 import { BASE_FILE_URL } from '../../services/utils';
 import { RootState } from '../../stores';
 import { formatNumber } from '../../utils/numbers';
 import { styles } from './styles';
 
-import appetizer1 from '../../assets/EpicurentNest/appetizer3.jpg';
-import appetizer2 from '../../assets/EpicurentNest/appetizer2.jpg';
-import appetizer3 from '../../assets/EpicurentNest/appetizer1.jpg';
-
-import maincourse1 from '../../assets/EpicurentNest/maincourse1.jpg';
-import maincourse2 from '../../assets/EpicurentNest/maincourse2.jpg';
-import maincourse3 from '../../assets/EpicurentNest/maincourse3.png';
 import ApiServices from '../../services/apis';
-import hotel from '../../stores/hotel';
+
 type RestaurantRouteProp = RouteProp<RootStackParamList, 'Restaurant'>;
 
 interface menus {
@@ -59,14 +50,7 @@ const Restaurant: React.FC<RestaurantRouteProp> = () => {
   const [order, setOrder] = useState(false);
   const [qty, setQty] = useState('1');
   const [selectedMenuIdx, setSelectedMenuIdx] = useState(0);
-  // const [index, setIndex] = useState(0);
 
-  // function setData(id: React.SetStateAction<number>) {
-  //   setCategory(id);
-  //   console.log(foods);
-  // }
-
-  // const ref = useRef<View>(null);
   const textRef = useRef<TextInput>(null);
   const { profile } = useSelector((s: RootState) => s.hotel);
   const selectedMenu = foods.find(v => v.id === selectedMenuIdx);
@@ -84,7 +68,6 @@ const Restaurant: React.FC<RestaurantRouteProp> = () => {
         const resExention = await ApiServices.getRestaurant(hotelId);
         if (resExention.status === 200) {
           setExtentionCall(resExention.data.data);
-          // console.log(extentionCall);
         } else {
           ToastAndroid.show('Cannot get categories', ToastAndroid.SHORT);
         }
@@ -106,7 +89,6 @@ const Restaurant: React.FC<RestaurantRouteProp> = () => {
         );
         if (resFoodCategory.status === 200) {
           setFoodCategories(resFoodCategory.data.data);
-          // console.log(foodCategories);
         } else {
           ToastAndroid.show('Cannot get categories', ToastAndroid.SHORT);
         }
@@ -118,6 +100,12 @@ const Restaurant: React.FC<RestaurantRouteProp> = () => {
 
     getFoodCategories();
   }, []);
+
+  useEffect(() => {
+    if (categories.length > 0) {
+      setCategory(categories[0].id);
+    }
+  }, [categories]);
 
   useEffect(() => {
     const getFoods = async () => {
@@ -146,7 +134,7 @@ const Restaurant: React.FC<RestaurantRouteProp> = () => {
       getFoods();
     }
   }, [category, categoryId, hotelId]);
-  // console.log(extention);
+
   return (
     <BaseLayout profile={profile} style={styles.root}>
       <View style={styles.container}>
@@ -158,11 +146,11 @@ const Restaurant: React.FC<RestaurantRouteProp> = () => {
             <FlatList
               data={categories}
               keyExtractor={item => item.id.toString()}
-              renderItem={({ item,index }) => (
+              renderItem={({ item, index }) => (
                 <TextMenuItem
+                  preferredFocus={index === 0}
                   key={item.id}
                   activeColor={profile?.primaryColor}
-                  preferredFocus={index === 0}
                   active={category === item.id}
                   title={item.name}
                   onFocus={() => setCategory(item.id)}
@@ -197,26 +185,30 @@ const Restaurant: React.FC<RestaurantRouteProp> = () => {
                 />
               </>
             )}
-          <FlatList
-            removeClippedSubviews={false}
-            numColumns={2}
-            columnWrapperStyle={styles.listColWrapper}
-            data={foods}
-            renderItem={({ item }) => (
-              <ImageItem
-                key={item.id}
-                activeColor={profile?.primaryColor}
-                source={{ uri: `${BASE_FILE_URL}/${item.img}` }}
-                text={item.name}
-                style={styles.item}
-                onFocus={() => setSelectedMenuIdx(item.id)}
-                onPress={() => {
-                  // setOrder(true);yy
-                }}
-              />
-            )}
-            style={styles.menuList}
-          />
+
+            {categories.find(v => v.id === category) != null &&
+              categories.find(v => v.id === category)?.name !== 'Gallery' && (
+                <FlatList
+                  removeClippedSubviews={false}
+                  numColumns={2}
+                  columnWrapperStyle={styles.listColWrapper}
+                  data={foods}
+                  renderItem={({ item, index }) => (
+                    <ImageItem
+                      key={item.id}
+                      activeColor={profile?.primaryColor}
+                      source={{ uri: `${BASE_FILE_URL}/${item.img}` }}
+                      text={item.name}
+                      style={styles.item}
+                      onFocus={() => setSelectedMenuIdx(item.id)}
+                      onPress={() => {
+                        // setOrder(true);yy
+                      }}
+                    />
+                  )}
+                  style={styles.menuList}
+                />
+            )} 
         </Card>
         {categories.find(v => v.id === category) != null &&
           categories.find(v => v.id === category)?.name !== 'Gallery' && (

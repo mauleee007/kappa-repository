@@ -20,7 +20,7 @@ interface Props {
   onPress?: () => void;
 }
 
-const ImageItem: React.FC<Props> = ({
+const ImageItem = React.forwardRef<View, Props>(({
   activeColor,
   imgStyle,
   source,
@@ -29,10 +29,11 @@ const ImageItem: React.FC<Props> = ({
   preferredFocus,
   onFocus,
   onPress,
-}) => {
+}, ref) => {
   return (
     <View style={StyleSheet.compose<ViewStyle>(styles.root, style)}>
       <ImageButton
+        ref={ref}
         preferredFocus={preferredFocus}
         color={activeColor}
         source={source}
@@ -43,7 +44,7 @@ const ImageItem: React.FC<Props> = ({
       {text != null && <Text style={styles.text}>{text}</Text>}
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   root: {

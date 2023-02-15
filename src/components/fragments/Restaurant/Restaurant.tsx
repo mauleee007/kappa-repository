@@ -1,7 +1,7 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useNavigationState } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import React, { useMemo } from 'react';
-import { FlatList, ImageSourcePropType, StyleSheet } from 'react-native';
+import React, { useMemo, useLayoutEffect, useRef, useState } from 'react';
+import { findNodeHandle, FlatList, ImageSourcePropType, NativeModules, StyleSheet, View } from 'react-native';
 import { useSelector } from 'react-redux';
 import { RootStackParamList } from '../../../../App';
 import { BASE_FILE_URL } from '../../../services/utils';
@@ -9,58 +9,23 @@ import { RootState } from '../../../stores';
 import { normalize } from '../../../utils/scaling';
 import Card from '../../elements/Card';
 import ImageItem from '../RoomTypes/ImageItem';
-import img1 from '../../../assets/EpicurentNest/InVillaDining.jpg';
-import img2 from '../../../assets/EpicurentNest/Kelapa.jpg';
-import img3 from '../../../assets/EpicurentNest/Kepuh.jpg';
-import img4 from '../../../assets/EpicurentNest/Kokokan.jpg';
-import img5 from '../../../assets/EpicurentNest/BaleGourmet.jpg';
-import img6 from '../../../assets/EpicurentNest/Lianas.jpg';
 
 type HotelGuideNavigationProps = NativeStackNavigationProp<
   RootStackParamList,
   'HotelGuide'
 >;
 
-const dataDummy: { id: number; name: string; text: string; img: string }[] = [
-  {
-    id: 1,
-    name: 'In Villa Dining',
-    text: 'In Villa Dining',
-    img: img1,
-  },
-  {
-    id: 2,
-    name: 'Kelapa',
-    text: 'Kelapa',
-    img: img2,
-  },
-  {
-    id: 3,
-    name: 'Kepuh',
-    text: 'Kepuh',
-    img: img3,
-  },
-  {
-    id: 4,
-    name: 'Kokoan',
-    text: 'Kokoan',
-    img: img4,
-  },
-  {
-    id: 5,
-    name: 'Bale Gourmet',
-    text: 'Bale Gourmet',
-    img: img5,
-  },
-];
-
 interface Props {
   categories: FoodCategory[];
 }
 
 const Restaurant: React.FC<Props> = ({ categories }) => {
+  const [gotoDetail, setGotoDetail] = useState(false);
+
   const navigation = useNavigation<HotelGuideNavigationProps>();
   const { profile } = useSelector((s: RootState) => s.hotel);
+  const navState = useNavigationState(state => state);
+  const itemRef = useRef<View>(null);
 
   const data: FoodCategory[] = useMemo(() => {
     return [
@@ -70,6 +35,22 @@ const Restaurant: React.FC<Props> = ({ categories }) => {
       })),
     ];
   }, [categories]);
+
+  useLayoutEffect(() => {
+    if (navState.index === 2) {
+      setGotoDetail(true);
+      return;
+    }
+
+    if (navState.index === 1 && gotoDetail) {
+      if (itemRef.current != null) {
+        const tag = findNodeHandle(itemRef.current);
+        NativeModules.UIManager.updateView(tag, 'RCTView', { hasTVPreferredFocus: true });
+      }
+      setGotoDetail(false);
+      return;
+    }
+  }, [navState]);
 
   return (
     <>
@@ -81,9 +62,9 @@ const Restaurant: React.FC<Props> = ({ categories }) => {
           keyExtractor={item => item.id.toString()}
           renderItem={({ item, index }) => (
             <ImageItem
+              ref={index === 0 ? itemRef : undefined}
               activeColor={profile?.primaryColor}
               key={item.id}
-              // preferredFocus={index === 0}
               source={item.img as ImageSourcePropType}
               style={styles.item}
               onPress={() => {
