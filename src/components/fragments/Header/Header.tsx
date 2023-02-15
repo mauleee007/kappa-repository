@@ -37,7 +37,7 @@ const Header: React.FC<Props> = ({ hideGuest, profile }) => {
               <Text style={{ ...styles.text, marginBottom: normalize(10) }}>
                 {format(now, 'eee, d MMM yyyy')}
               </Text>
-              <Text style={styles.text}>{format(now, '.mm aa')}</Text>
+              <Text style={styles.text}>{format(now, 'mm aa')}</Text>
             </View>
           </View>
         </View>

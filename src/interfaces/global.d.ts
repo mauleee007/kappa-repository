@@ -41,11 +41,18 @@ interface HotelProfileDetail {
   menu?: menus[];
   img: any;
 }
+interface OmtaraSpaDetail {
+  id: number;
+  hotelId?: number;
+  title?: string;
+  description?: string;
+  menu?: menus[];
+  img: any;
+}
 interface menus {
   id: number;
   image: string;
   desc: string;
-  
 }
 
 interface DanuDetail {
@@ -96,6 +103,16 @@ interface Room {
 }
 
 interface Around {
+  id: number;
+  hotelId: number;
+  name: string;
+  description: string;
+  img: string;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  deletedAt?: Date | string;
+}
+interface TreatmentMenu {
   id: number;
   hotelId: number;
   name: string;

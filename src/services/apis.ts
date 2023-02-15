@@ -32,6 +32,11 @@ function getGallery(): Promise<AxiosResponse> {
   return axios.get(url, { headers: { Authorization: `Bearer ${API_KEY}` } });
 }
 
+function getKappa(): Promise<AxiosResponse> {
+  const url = `${BASE_URL}/hotels/instants`;
+  return axios.get(url, { headers: { Authorization: `Bearer ${API_KEY}` } });
+}
+
 function getHotelProfile(
   id?: number,
   detailId?: number,
@@ -49,13 +54,35 @@ function getHotelProfile(
   return axios.get(url, { headers: { Authorization: `Bearer ${API_KEY}` } });
 }
 
+function getSpa(id?: number): Promise<AxiosResponse> {
+  let url = '';
+  if (id === 1) {
+    url = `${BASE_URL}/hotels/spa`;
+  } else if (id === 4) {
+    url = `${BASE_URL}/hotels/spa_workshop`;
+  }
+  return axios.get(url, { headers: { Authorization: `Bearer ${API_KEY}` } });
+}
+function getSpaFacilities(): Promise<AxiosResponse> {
+  const url = `${BASE_URL}/hotels/spa_facilities`;
+  return axios.get(url, { headers: { Authorization: `Bearer ${API_KEY}` } });
+}
+function getWellnessTreatment(): Promise<AxiosResponse> {
+  const url = `${BASE_URL}/hotels/spa_treatment`;
+  return axios.get(url, { headers: { Authorization: `Bearer ${API_KEY}` } });
+}
+
 const ApiServices = {
   getDanu,
   getRestaurant,
   getFoodCategories,
   getFoods,
   getHotelProfile,
+  getKappa,
   getGallery,
+  getSpa,
+  getSpaFacilities,
+  getWellnessTreatment,
 };
 
 export default ApiServices;

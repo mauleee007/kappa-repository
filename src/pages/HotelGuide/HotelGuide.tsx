@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import Card from '../../components/elements/Card';
@@ -9,6 +9,7 @@ import CCTVCard from '../../components/fragments/CCTVCard';
 import Events from '../../components/fragments/Events';
 import Facilities from '../../components/fragments/Facilities';
 import HotelProfile from '../../components/fragments/HotelProfile';
+import OmTaraSpaDetail from '../../components/fragments/OmTaraSpa/OmTaraSpa';
 import Policies from '../../components/fragments/Policies';
 import Promos from '../../components/fragments/Promos';
 import Restaurant from '../../components/fragments/Restaurant';
@@ -31,10 +32,33 @@ const HotelGuide: React.FC = () => {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(0);
   const [menu, setMenu] = useState(0);
+  // const [bg, setBg] = useState('file:///storage/emulated/0/tv/guide-bg.jpg');
 
   const dispatch = useDispatch<AppDispatch>();
   const { hotel, profile, cctvUrl } = useSelector((s: RootState) => s.hotel);
 
+  const bg = useMemo(() => {
+    switch (menu) {
+      case 0:
+        return 'file:///storage/emulated/0/tv/resort_profile_bg.jpg';
+
+      case 2:
+        return 'file:///storage/emulated/0/tv/facilities_bg.jpg';
+      case 3:
+        return 'file:///storage/emulated/0/tv/omtaraspa_bg.jpg';
+      case 4:
+        return 'file:///storage/emulated/0/tv/epicurent_nest_bg.jpg';
+      case 5:
+        return 'file:///storage/emulated/0/tv/promo&event_bg.jpg';
+      case 100:
+        return 'file:///storage/emulated/0/tv/danu_retreat_bg.jpg';
+      case 101:
+        return 'file:///storage/emulated/0/tv/danu_jungle_bg.jpg';
+
+      default:
+        return 'file:///storage/emulated/0/tv/guide-bg.jpg';
+    }
+  }, [menu]);
   const renderContent = useCallback(() => {
     switch (menu) {
       case 0:
@@ -50,20 +74,18 @@ const HotelGuide: React.FC = () => {
         }
         break;
       case 3:
+        return <OmTaraSpaDetail omtaraspa={profile} />;
+      case 4:
         if (foodCategories.length > 0) {
           return <Restaurant categories={foodCategories} />;
         }
         break;
-      case 4:
+      case 5:
         if (promos.length > 0) {
           return <Promos promos={promos} />;
         }
         break;
-      case 5:
-        if (events.length > 0) {
-          return <Events events={events} />;
-        }
-        break;
+
       case 6:
         if (policies.length > 0) {
           return <Policies policies={policies} />;
@@ -121,7 +143,7 @@ const HotelGuide: React.FC = () => {
       try {
         const resFoodCategory = await ApiServices.getRestaurant(hotel.id);
         if (resFoodCategory.status === 200) {
-          console.log(resFoodCategory);
+          // console.log(resFoodCategory);
 
           if (isMounted) {
             setFoodCategories(resFoodCategory.data.data);
@@ -137,7 +159,6 @@ const HotelGuide: React.FC = () => {
         if (resRoom.status === 200) {
           if (isMounted) {
             setRooms(resRoom.data.data);
-            
           }
         } else {
           dispatch(setToast({ message: 'Cannot get hotel rooms' }));
@@ -236,11 +257,7 @@ const HotelGuide: React.FC = () => {
   }, [dispatch]);
 
   return (
-    <BaseLayout
-      customBg={{ uri: 'file:///storage/emulated/0/tv/guide-bg.jpg' }}
-      profile={profile}
-      style={styles.root}
-    >
+    <BaseLayout customBg={{ uri: bg }} profile={profile} style={styles.root}>
       <View style={styles.container}>
         <Card style={{ ...styles.card, ...styles.sidebar }}>
           <ScrollView>
@@ -270,20 +287,21 @@ const HotelGuide: React.FC = () => {
             <TextMenuItem
               active={menu === 3}
               activeColor={profile?.primaryColor}
-              title="Epicurean Nests"
+              title="Om Tara Spa by Clarins"
               onFocus={() => setMenu(3)}
             />
             <TextMenuItem
+              active={menu === 4}
               activeColor={profile?.primaryColor}
-              title="Promo"
+              title="Epicurean Nests"
               onFocus={() => setMenu(4)}
             />
             <TextMenuItem
-              active={menu === 5}
               activeColor={profile?.primaryColor}
-              title="Event"
+              title="Promo&Event"
               onFocus={() => setMenu(5)}
             />
+
             <TextMenuItem
               active={menu === 6}
               activeColor={profile?.primaryColor}

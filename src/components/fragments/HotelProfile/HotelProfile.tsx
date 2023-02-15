@@ -214,7 +214,7 @@ const GalleryDetail: React.FC<GlProps> = ({ dataGallery, onBack }) => {
 
   useEffect(() => {
     const getGallery = async () => {
-      // setLoading(true);
+      setLoading(true);
       try {
         const resGallery = await ApiServices.getGallery();
         console.log(resGallery.data.data);
@@ -461,9 +461,8 @@ const DetailKappaInstant: React.FC<KappaProps> = ({ kappa, onBack }) => {
           renderItem={({ item }) => (
             <ImageItem
               key={item.id}
-              preferredFocus={Dummy === item.id}
+              preferredFocus={item.id === 1}
               text={item.name}
-              
               activeColor={profile?.primaryColor}
               source={{ uri: `${BASE_FILE_URL}/${item.img}` }}
               onFocus={() => setChoice(item.id)}
