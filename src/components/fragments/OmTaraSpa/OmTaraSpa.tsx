@@ -67,7 +67,7 @@ const Data: OmtaraSpaDetail[] = [
   {
     id: 4,
     img: img4,
-    title: 'Retreat & Workshop',
+    title: 'Workshop',
     description: '',
   },
 ];

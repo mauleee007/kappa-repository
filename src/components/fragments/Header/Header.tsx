@@ -109,8 +109,8 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Regular',
   },
   time: {
-    marginLeft: normalize(16),
-    marginTop: normalize(24),
+    marginLeft: normalize(12),
+    marginTop: normalize(26),
   },
   timeContainer: {
     alignItems: 'center',

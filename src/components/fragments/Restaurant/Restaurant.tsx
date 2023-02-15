@@ -79,10 +79,11 @@ const Restaurant: React.FC<Props> = ({ categories }) => {
           numColumns={3}
           columnWrapperStyle={styles.listColWrapper}
           keyExtractor={item => item.id.toString()}
-          renderItem={({ item }) => (
+          renderItem={({ item, index }) => (
             <ImageItem
               activeColor={profile?.primaryColor}
               key={item.id}
+              // preferredFocus={index === 0}
               source={item.img as ImageSourcePropType}
               style={styles.item}
               onPress={() => {
@@ -111,7 +112,7 @@ const styles = StyleSheet.create({
   item: {
     flex: 0.33,
     margin: normalize(20),
-    height: 130,
+    height: 140,
     marginVertical: 'auto',
   },
   listColWrapper: {

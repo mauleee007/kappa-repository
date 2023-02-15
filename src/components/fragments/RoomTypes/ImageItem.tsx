@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
     height: 120,
     width: '48%',
     margin: '1%',
-    marginBottom: 13,
+    marginBottom: 32,
   },
   image: {
     flex: 1,
