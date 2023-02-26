@@ -39,7 +39,6 @@ const HotelGuide: React.FC = () => {
     switch (menu) {
       case 0:
         return 'file:///storage/emulated/0/tv/resort_profile_bg.jpg';
-
       case 2:
         return 'file:///storage/emulated/0/tv/facilities_bg.jpg';
       case 3:
@@ -47,12 +46,13 @@ const HotelGuide: React.FC = () => {
       case 4:
         return 'file:///storage/emulated/0/tv/epicurent_nest_bg.jpg';
       case 5:
-        return 'file:///storage/emulated/0/tv/promo&event_bg.jpg';
+        return 'file:///storage/emulated/0/tv/promo_event.jpg';
+      case 6:
+        return 'file:///storage/emulated/0/tv/policy_bg.jpg';
       case 100:
         return 'file:///storage/emulated/0/tv/danu_retreat_bg.jpg';
       case 101:
         return 'file:///storage/emulated/0/tv/danu_jungle_bg.jpg';
-
       default:
         return 'file:///storage/emulated/0/tv/guide-bg.jpg';
     }
