@@ -1,4 +1,11 @@
-import React, { createRef, RefObject, useCallback, useEffect, useRef, useState } from 'react';
+import React, {
+  createRef,
+  RefObject,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import {
   BackHandler,
   StyleSheet,
@@ -309,7 +316,9 @@ const OmTaraSpaDetail: React.FC = () => {
   );
   const [idx, setIdx] = useState(0);
 
-  const itemRefs = useRef<RefObject<View>[] | null[]>(Array(4).fill(createRef()));
+  const itemRefs = useRef<RefObject<View>[] | null[]>(
+    Array(4).fill(createRef()),
+  );
 
   const [detailMenu, setMenu] = useState<TreatmentMenu[] | null>(null);
   const { profile } = useSelector((s: RootState) => s.hotel);
@@ -321,42 +330,46 @@ const OmTaraSpaDetail: React.FC = () => {
     }
 
     const tag = findNodeHandle(ref.current);
-    NativeModules.UIManager.updateView(tag, 'RCTView', { hasTVPreferredFocus: true });
+    NativeModules.UIManager.updateView(tag, 'RCTView', {
+      hasTVPreferredFocus: true,
+    });
   };
 
   return (
     <>
       <Card style={styles.card}>
-        {detailOmTaraSpa == null && detailFacilities == null && detailMenu == null && (
-          <FlatList
-            horizontal
-            data={Data}
-            keyExtractor={item => item.id.toString()}
-            style={styles.list}
-            renderItem={({ item, index }) => (
-              <ImageItem
-                preferredFocus={index === idx}
-                activeColor={profile?.primaryColor}
-                key={item.id}
-                source={item.img as ImageSourcePropType}
-                text={item.title}
-                style={styles.item}
-                onPress={() => {
-                  setIdx(index);
-                  if (item.id === 1) {
-                    setDetail(item);
-                  } else if (item.id === 4) {
-                    setDetail(item);
-                  } else if (item.id === 3) {
-                    setFacilities(item);
-                  } else if (item.id === 2) {
-                    setMenu(item);
-                  }
-                }}
-              />
-            )}
-          />
-        )}
+        {detailOmTaraSpa == null &&
+          detailFacilities == null &&
+          detailMenu == null && (
+            <FlatList
+              horizontal
+              data={Data}
+              keyExtractor={item => item.id.toString()}
+              style={styles.list}
+              renderItem={({ item, index }) => (
+                <ImageItem
+                  preferredFocus={index === idx}
+                  activeColor={profile?.primaryColor}
+                  key={item.id}
+                  source={item.img as ImageSourcePropType}
+                  text={item.title}
+                  style={styles.item}
+                  onPress={() => {
+                    setIdx(index);
+                    if (item.id === 1) {
+                      setDetail(item);
+                    } else if (item.id === 4) {
+                      setDetail(item);
+                    } else if (item.id === 3) {
+                      setFacilities(item);
+                    } else if (item.id === 2) {
+                      setMenu(item);
+                    }
+                  }}
+                />
+              )}
+            />
+          )}
 
         {detailOmTaraSpa != null && (
           <DescOmtara

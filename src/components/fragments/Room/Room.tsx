@@ -111,6 +111,7 @@ const Room: React.FC<Props> = ({ room }) => {
   const [hideList, setHideList] = useState(false);
   const { profile } = useSelector((s: RootState) => s.hotel);
   const [listImg, setListImg] = useState<ListImg[]>([]);
+  const [choiceItem, setChoiceItem] = useState(-1);
   const { hotel } = useSelector((s: RootState) => s.hotel);
 
   const dispatch = useDispatch<AppDispatch>();
@@ -122,7 +123,9 @@ const Room: React.FC<Props> = ({ room }) => {
     }
 
     const tag = findNodeHandle(mainRef.current);
-    NativeModules.UIManager.updateView(tag, 'RCTView', { hasTVPreferredFocus: true });
+    NativeModules.UIManager.updateView(tag, 'RCTView', {
+      hasTVPreferredFocus: true,
+    });
   }, []);
 
   useEffect(() => {
@@ -156,40 +159,41 @@ const Room: React.FC<Props> = ({ room }) => {
 
   return (
     <Card style={styles.card}>
-      <FlatList
-        horizontal
-        data={listImg}
-        keyExtractor={item => item.id.toString()}
-        style={{...styles.list, display: !hideList ? 'flex' : 'none' }}
-        renderItem={({ item, index }) => (
-          <ImageItem
-            ref={index === 0 ? mainRef : undefined}
-            activeColor={profile?.primaryColor}
-            source={{ uri: `${BASE_FILE_URL}/${item.img}` }}
-            text={item.name}
-            style={styles.item}
-            onPress={() => {
-              setHideList(true);
-              setDetail(item);
-            }}
+      <View style={styles.container}>
+        <View style={styles.cardMiddle}>
+          <FlatList
+            focusable
+            hasTVPreferredFocus
+            numColumns={2}
+            style={styles.menuList}
+            keyExtractor={item => item.id.toString()}
+            data={listImg}
+            renderItem={({ item, index }) => (
+              <ImageItem
+                preferredFocus={index === 0}
+                key={item.id}
+                text={item.name}
+                activeColor={profile?.primaryColor}
+                source={{ uri: `${BASE_FILE_URL}/${item.img}` }}
+                onFocus={() => setChoiceItem(index)}
+                style={styles.item3}
+              />
+            )}
           />
-        )}
-      />
-
-      <View style={{ display: hideList? 'flex' : 'none', height: '100%' }}>
-        {detail && (
-          <DescDanu
-            dataRoom={listImg}
-            room={room}
-            onBack={() => {
-              setHideList(false);
-              setFocus();
-              setTimeout(() => {
-                setDetail(null);
-              });
-            }}
-          />
-        )}
+        </View>
+        <View style={styles.cardRight}>
+          {choiceItem >= 0 && (
+            <>
+              <Image
+                source={{ uri: `${BASE_FILE_URL}/${listImg[choiceItem].img}` }}
+                resizeMode="cover"
+                style={styles.image}
+              />
+              <Text style={styles.title2}>{listImg[choiceItem].name}</Text>
+              <Text style={styles.desc}>{listImg[choiceItem].description}</Text>
+            </>
+          )}
+        </View>
       </View>
     </Card>
   );
@@ -201,6 +205,10 @@ const styles = StyleSheet.create({
     marginLeft: 3,
     marginRight: 3,
     overflow: 'hidden',
+  },
+  item3: {
+    height: 150,
+    fontSize: 12,
   },
   card2: {
     padding: 16,
